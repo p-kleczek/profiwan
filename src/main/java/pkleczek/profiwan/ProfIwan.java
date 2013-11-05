@@ -50,7 +50,7 @@ public class ProfIwan {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new DictionaryFrame(dictionary);
+		frame = new DictionaryFrame();
 		frame.setTitle("ProfIwan");
 	}
 

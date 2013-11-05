@@ -26,7 +26,7 @@ public class DictionaryTable extends JTable {
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		super(dtm);
 
-		this.dictionary = new ArrayList<>(dictionary);
+		this.dictionary = dictionary;
 
 		for (PhraseEntry e : dictionary) {
 			dtm.addRow(new Object[] { e.getRusText(), e.getPlText() });

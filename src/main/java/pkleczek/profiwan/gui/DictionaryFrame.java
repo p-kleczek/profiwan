@@ -16,6 +16,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import pkleczek.profiwan.model.PhraseEntry;
+import pkleczek.profiwan.utils.IOUtils;
 
 public class DictionaryFrame extends JFrame {
 
@@ -33,7 +34,9 @@ public class DictionaryFrame extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public DictionaryFrame(List<PhraseEntry> dictionary) {
+	public DictionaryFrame() {
+		final List<PhraseEntry> dictionary = IOUtils.readDictionary(IOUtils.vocabularyDict);
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -119,6 +122,8 @@ public class DictionaryFrame extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO: warning, gdy puste / niepelne wpisy
 				dictionaryTable.save();
+				
+				IOUtils.writeDictionary(IOUtils.vocabularyDict, dictionary);
 			}
 		});
 		GridBagConstraints gbc_btnSave = new GridBagConstraints();

@@ -1,12 +1,23 @@
 package pkleczek.profiwan.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PhraseEntry {
+public class PhraseEntry implements Serializable {
 
-	public static class RevisionEntry {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5318708654536022199L;
+
+	public static class RevisionEntry implements Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 939716563607754267L;
+
 		public Date date;
 
 		/**
