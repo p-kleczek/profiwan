@@ -5,6 +5,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -16,26 +17,24 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
 import pkleczek.profiwan.model.PhraseEntry;
-import pkleczek.profiwan.utils.IOUtils;
+import pkleczek.profiwan.utils.DBUtils;
 
 public class DictionaryFrame extends JFrame {
 
 	private JPanel contentPane;
 
 	/**
-	 * Launch the application.
-	 */
-	/*
-	 * public static void main(String[] args) { EventQueue.invokeLater(new
-	 * Runnable() { public void run() { try { DictionaryFrame frame = new
-	 * DictionaryFrame(); frame.setVisible(true); } catch (Exception e) {
-	 * e.printStackTrace(); } } }); }
-	 */
-	/**
 	 * Create the frame.
 	 */
 	public DictionaryFrame() {
-		final List<PhraseEntry> dictionary = IOUtils.readDictionary(IOUtils.vocabularyDict);
+//		final List<PhraseEntry> dictionary = IOUtils.readDictionary(IOUtils.vocabularyDict);
+		List<PhraseEntry> dictionary = null;
+		try {
+			dictionary = DBUtils.getDictionary();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -81,22 +80,22 @@ public class DictionaryFrame extends JFrame {
 		gbl_panel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		JButton button = new JButton("+");
-		button.addActionListener(new ActionListener() {
+		JButton btnAdd = new JButton("+");
+		btnAdd.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				dictionaryTable.addRow();
 			}
 		});
-		GridBagConstraints gbc_button = new GridBagConstraints();
-		gbc_button.insets = new Insets(0, 0, 5, 0);
-		gbc_button.gridx = 0;
-		gbc_button.gridy = 0;
-		panel.add(button, gbc_button);
+		GridBagConstraints gbc_btnAdd = new GridBagConstraints();
+		gbc_btnAdd.insets = new Insets(0, 0, 5, 0);
+		gbc_btnAdd.gridx = 0;
+		gbc_btnAdd.gridy = 0;
+		panel.add(btnAdd, gbc_btnAdd);
 
-		JButton button_1 = new JButton("-");
-		button_1.addActionListener(new ActionListener() {
+		JButton btnRemove = new JButton("-");
+		btnRemove.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -109,11 +108,11 @@ public class DictionaryFrame extends JFrame {
 				}
 			}
 		});
-		GridBagConstraints gbc_button_1 = new GridBagConstraints();
-		gbc_button_1.insets = new Insets(0, 0, 5, 0);
-		gbc_button_1.gridx = 0;
-		gbc_button_1.gridy = 1;
-		panel.add(button_1, gbc_button_1);
+		GridBagConstraints gbc_btnRemove = new GridBagConstraints();
+		gbc_btnRemove.insets = new Insets(0, 0, 5, 0);
+		gbc_btnRemove.gridx = 0;
+		gbc_btnRemove.gridy = 1;
+		panel.add(btnRemove, gbc_btnRemove);
 
 		JButton btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
@@ -123,7 +122,9 @@ public class DictionaryFrame extends JFrame {
 				// TODO: warning, gdy puste / niepelne wpisy
 				dictionaryTable.save();
 				
-				IOUtils.writeDictionary(IOUtils.vocabularyDict, dictionary);
+				// TODO: save last edited entry
+				
+//				IOUtils.writeDictionary(IOUtils.vocabularyDict, dictionary);
 			}
 		});
 		GridBagConstraints gbc_btnSave = new GridBagConstraints();

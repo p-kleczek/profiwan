@@ -58,7 +58,7 @@ public class PhraseEntryTest {
 		}
 
 		assertEquals(pe.getRevisionFrequency(),
-				PhraseEntry.MAX_REVISION_FREQUENCY);
+				PhraseEntry.MIN_REVISION_INTERVAL);
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class PhraseEntryTest {
 			pe.getRevisions().add(re);
 		}
 
-		assertEquals(PhraseEntry.MAX_REVISION_FREQUENCY
+		assertEquals(PhraseEntry.MIN_REVISION_INTERVAL
 				+ PhraseEntry.FREQUENCY_DECAY, pe.getRevisionFrequency());
 	}
 
@@ -102,7 +102,7 @@ public class PhraseEntryTest {
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
-		assertEquals(PhraseEntry.MAX_REVISION_FREQUENCY,
+		assertEquals(PhraseEntry.MIN_REVISION_INTERVAL,
 				pe.getRevisionFrequency());
 	}
 
@@ -128,7 +128,7 @@ public class PhraseEntryTest {
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
-		assertEquals(PhraseEntry.MAX_REVISION_FREQUENCY
+		assertEquals(PhraseEntry.MIN_REVISION_INTERVAL
 				+ PhraseEntry.FREQUENCY_DECAY, pe.getRevisionFrequency());
 	}
 }

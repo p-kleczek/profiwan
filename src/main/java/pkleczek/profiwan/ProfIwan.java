@@ -1,19 +1,18 @@
 package pkleczek.profiwan;
 
 import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 import javax.swing.JFrame;
 
+import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.DictionaryFrame;
 import pkleczek.profiwan.model.PhraseEntry;
+import pkleczek.profiwan.utils.DBUtils;
 
 public class ProfIwan {
 
 	private JFrame frame;
-	
-	private List<PhraseEntry> dictionary = new ArrayList<PhraseEntry>();
 
 	/**
 	 * Launch the application.
@@ -21,6 +20,19 @@ public class ProfIwan {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
+
+				Runtime.getRuntime().addShutdownHook(new Thread() {
+					@Override
+					public void run() {
+						try {
+							DBUtils.getConnection().close();
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				});
+
 				try {
 					ProfIwan window = new ProfIwan();
 					window.frame.setVisible(true);
@@ -35,15 +47,26 @@ public class ProfIwan {
 	 * Create the application.
 	 */
 	public ProfIwan() {
-		initializeDictionary();
+		prepareDB();
 		initialize();
 	}
 
-	private void initializeDictionary() {
-		PhraseEntry e = new PhraseEntry();
-		e.setRusText("a");
-		e.setPlText("b");
-		dictionary.add(e);		
+	// for tests
+	private void prepareDB() {
+		try {
+			DBUtils.recreateTables();
+			PhraseEntry e = new PhraseEntry();
+			e.setRusText("x");
+			e.setPlText("y");
+
+			e.insertDBEntry();
+
+			Debug.printDict("init");
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -51,6 +74,7 @@ public class ProfIwan {
 	 */
 	private void initialize() {
 		frame = new DictionaryFrame();
+		// frame = new RevisionsFrame();
 		frame.setTitle("ProfIwan");
 	}
 
