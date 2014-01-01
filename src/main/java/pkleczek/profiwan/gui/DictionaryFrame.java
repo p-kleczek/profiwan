@@ -22,13 +22,13 @@ import pkleczek.profiwan.utils.DBUtils;
 public class DictionaryFrame extends JFrame {
 
 	private JPanel contentPane;
+	private List<PhraseEntry> dictionary;
 
 	/**
 	 * Create the frame.
 	 */
 	public DictionaryFrame() {
-//		final List<PhraseEntry> dictionary = IOUtils.readDictionary(IOUtils.vocabularyDict);
-		List<PhraseEntry> dictionary = null;
+		dictionary = null;
 		try {
 			dictionary = DBUtils.getDictionary();
 		} catch (SQLException e) {
@@ -121,6 +121,7 @@ public class DictionaryFrame extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO: warning, gdy puste / niepelne wpisy
 				dictionaryTable.save();
+				saveDictionary();
 				
 				// TODO: save last edited entry
 				
@@ -133,4 +134,14 @@ public class DictionaryFrame extends JFrame {
 		panel.add(btnSave, gbc_btnSave);
 	}
 
+	private void saveDictionary() {
+		for (PhraseEntry pe : dictionary) {
+			try {
+				pe.insertDBEntry();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 }

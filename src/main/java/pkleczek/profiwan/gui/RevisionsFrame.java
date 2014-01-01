@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -20,8 +22,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
+import pkleczek.profiwan.utils.DBUtils;
 
 public class RevisionsFrame extends JFrame {
 
@@ -45,38 +49,6 @@ public class RevisionsFrame extends JFrame {
 	private boolean enteredCorrectly = false;
 	private int initialNumberOfRevisions = 0;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					RevisionsFrame frame = new RevisionsFrame();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	private void initializeDictionary() {
-		dictionary = new ArrayList<PhraseEntry>();
-
-		PhraseEntry e;
-
-		e = new PhraseEntry();
-		e.setRusText("a");
-		e.setPlText("b");
-		dictionary.add(e);
-
-		e = new PhraseEntry();
-		e.setRusText("x");
-		e.setPlText("y");
-		dictionary.add(e);
-	}
-
 	private void prepareRevisions() {
 		for (PhraseEntry pe : dictionary) {
 			if (!pe.getRevisions().isEmpty()) {
@@ -91,17 +63,29 @@ public class RevisionsFrame extends JFrame {
 			pendingRevisions.add(pe);
 		}
 
-		lblPolish.setText(pendingRevisions.getFirst().getPlText());
-		initialNumberOfRevisions = pendingRevisions.size();
-		lblStats.setText("0 / " + initialNumberOfRevisions);
-		revIterator = pendingRevisions.listIterator();
+		// XXX: docelowo - brak mo¿liwosci robienia powtorek, gdy nie ma co powtarzac ;)
+		if (pendingRevisions.isEmpty()) {
+			lblPolish.setText("");
+			lblStats.setText("-");
+		} else {
+			lblPolish.setText(pendingRevisions.getFirst().getPlText());
+			initialNumberOfRevisions = pendingRevisions.size();
+			lblStats.setText("0 / " + initialNumberOfRevisions);
+			revIterator = pendingRevisions.listIterator();
+		}
 	}
 
 	/**
 	 * Create the frame.
 	 */
 	public RevisionsFrame() {
-		initializeDictionary();
+		try {
+			dictionary = DBUtils.getDictionary();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
 		prepareRevisions();
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -232,6 +216,16 @@ public class RevisionsFrame extends JFrame {
 		re.mistakes = 0; // FIXME
 		pe.getRevisions().add(re);
 		revIterator.remove();
+
+		// TODO: insert re into db
+		try {
+			re.insertDBEntry(pe.getId());
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		Debug.printRev("conf");
 	}
 
 	private void nextWord() {

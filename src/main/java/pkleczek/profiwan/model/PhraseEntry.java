@@ -11,7 +11,6 @@ import java.util.List;
 
 import pkleczek.profiwan.utils.DBExecutable;
 import pkleczek.profiwan.utils.DBUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * The <code>PhraseEntry</code> class stores all the information about a phrase
@@ -66,6 +65,16 @@ public class PhraseEntry implements Serializable, DBExecutable {
 		 * How many times a mistake was made during the given revision.
 		 */
 		public Integer mistakes;
+
+		public void insertDBEntry(int revisionEntryId) throws SQLException {
+
+			PreparedStatement stmt = DBUtils.insertRevisionEntry;
+
+			stmt.setDate(1, new java.sql.Date(date.getTime()));
+			stmt.setInt(2, mistakes);
+			stmt.setInt(3, revisionEntryId);
+			stmt.executeUpdate();
+		}
 	}
 
 	private int id;
@@ -198,7 +207,6 @@ public class PhraseEntry implements Serializable, DBExecutable {
 				} catch (SQLException logOrIgnore) {
 				}
 		}
-
 	}
 
 	@Override
@@ -222,8 +230,16 @@ public class PhraseEntry implements Serializable, DBExecutable {
 
 	@Override
 	public String toString() {
-		return String.format("id=%d rus=\'%s\' pl=\'%s\'", getId(),
-				getRusText(), getPlText());
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\'\n", getId(),
+				getRusText(), getPlText()));
+
+		for (RevisionEntry re : revisions) {
+			sb.append(String.format("\t%s [%d]\n", re.date.toString(),
+					re.mistakes));
+		}
+
+		return sb.toString();
 	}
 
 }
