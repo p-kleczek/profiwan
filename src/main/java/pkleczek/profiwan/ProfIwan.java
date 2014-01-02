@@ -65,6 +65,7 @@ public class ProfIwan {
 	 * Create the application.
 	 */
 	public ProfIwan() {
+		// test
 		prepareDB();
 		
 		frame = new MainFrame();

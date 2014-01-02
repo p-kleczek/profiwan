@@ -28,14 +28,16 @@ public class DBUtils {
 	private static PreparedStatement selectRevisionEntry = null;
 	public static PreparedStatement insertRevisionEntry = null;
 
+	public static final String prodDb = "jdbc:sqlite:profiwan.db";
+	public static final String debugDb = "jdbc:sqlite:profiwan_debug.db";
+
 	static {
 		try {
 			Class.forName("org.sqlite.JDBC");
 
 			SQLiteConfig conf = new SQLiteConfig();
 			conf.enforceForeignKeys(true);
-			c = DriverManager.getConnection("jdbc:sqlite:profiwan.db",
-					conf.toProperties());
+			c = DriverManager.getConnection(debugDb, conf.toProperties());
 		} catch (ClassNotFoundException | SQLException e) {
 			JOptionPane
 					.showMessageDialog(
@@ -43,7 +45,6 @@ public class DBUtils {
 							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			System.exit(-1);
 		}
-
 
 		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1,lang2,inRevision,date,label) "
 				+ "VALUES (NULL, ?, ?, ?, ?, ?);";
@@ -74,9 +75,9 @@ public class DBUtils {
 					insertRevisionEntryQuery);
 		} catch (SQLException e) {
 			JOptionPane
-			.showMessageDialog(
-					null,
-					Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+					.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			System.exit(-1);
 		}
 
@@ -186,17 +187,21 @@ public class DBUtils {
 		Connection conn = DBUtils.getConnection();
 		Statement stmt = conn.createStatement();
 
-		try {
-			stmt.executeUpdate("DROP TABLE IF EXISTS Phrase");
-			stmt.executeUpdate(queryPhrase);
-
-			stmt.executeUpdate("DROP TABLE IF EXISTS Revision");
-			stmt.executeUpdate(queryRevision);
-		} finally {
+		if (!conn.getMetaData().getURL().contains("debug")) {
+			System.err.println("not a debug db!");
+		} else {
 			try {
-				stmt.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
+				stmt.executeUpdate("DROP TABLE IF EXISTS Phrase");
+				stmt.executeUpdate(queryPhrase);
+
+				stmt.executeUpdate("DROP TABLE IF EXISTS Revision");
+				stmt.executeUpdate(queryRevision);
+			} finally {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

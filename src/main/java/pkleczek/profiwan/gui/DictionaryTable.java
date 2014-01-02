@@ -20,12 +20,12 @@ import pkleczek.profiwan.model.PhraseEntry;
 public class DictionaryTable extends JTable {
 
 	private static final DateFormat dateOutputFormatter = new SimpleDateFormat(
-			"yyyy-mm-dd"); //$NON-NLS-1$
+			"yyyy-MM-dd"); //$NON-NLS-1$
 
 	private static final int RUS_COLUMN = 0;
 	private static final int PL_COLUMN = 1;
-	private static final int REV_COLUMN = 2;
-	private static final int LABEL_COLUMN = 3;
+	private static final int LABEL_COLUMN = 2;
+	private static final int REV_COLUMN = 3;
 
 	public static final CharSequence ACCENT_MARKER = "\\"; //$NON-NLS-1$
 

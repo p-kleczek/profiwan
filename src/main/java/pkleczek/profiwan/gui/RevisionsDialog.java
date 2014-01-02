@@ -8,9 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.JButton;
@@ -47,6 +49,7 @@ public class RevisionsDialog extends JDialog {
 
 	private List<PhraseEntry> dictionary;
 	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>(); // poprawki
+	private Map<Integer, Integer> revisionMistakes = new HashMap<Integer, Integer>(); 
 	// w kolejce
 	private ListIterator<PhraseEntry> revIterator = null;
 	PhraseEntry currentRevision = null;
@@ -70,6 +73,9 @@ public class RevisionsDialog extends JDialog {
 			}
 
 			pendingRevisions.add(pe);
+			
+			// FIXME: odczyt z bd (jesli istnieje wpis z danego dnia), np. -n = bledy, ale jeszcze niezaliczone
+			revisionMistakes.put(pe.getId(), 0);
 		}
 
 		if (pendingRevisions.isEmpty()) {
@@ -151,6 +157,10 @@ public class RevisionsDialog extends JDialog {
 						lblCorrect.setForeground(Color.red);
 						btnEdit.setEnabled(true);
 						btnAccept.setEnabled(true);
+						
+						int previousMistakes = revisionMistakes.get(currentRevision.getId());
+						revisionMistakes.put(currentRevision.getId(), previousMistakes + 1);
+						// TODO: zapis do bd
 					}
 					state = State.ANSWER;
 				} else {
@@ -247,7 +257,7 @@ public class RevisionsDialog extends JDialog {
 	private void confirmRevision(PhraseEntry pe) {
 		RevisionEntry re = new RevisionEntry();
 		re.date = Calendar.getInstance().getTime();
-		re.mistakes = 0; // FIXME
+		re.mistakes = revisionMistakes.get(pe.getId()); // FIXME
 		pe.getRevisions().add(re);
 		revIterator.remove();
 
@@ -268,6 +278,7 @@ public class RevisionsDialog extends JDialog {
 		btnAccept.setEnabled(false);
 		
 		if (pendingRevisions.isEmpty()) {
+			// TODO: statystyki sesji
 			dispose();
 		} else {
 			if (!revIterator.hasNext()) {
