@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -81,6 +83,24 @@ public class PhraseEntry implements Serializable, DBExecutable {
 
 	private String plText = "";
 	private String rusText = "";
+	private Date creationDate = null;
+	private String label = "";
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
 
 	/**
 	 * <code>true</code> if the phrase is currently revised
@@ -188,6 +208,8 @@ public class PhraseEntry implements Serializable, DBExecutable {
 		stmt.setString(1, getRusText());
 		stmt.setString(2, getPlText());
 		stmt.setInt(3, ir);
+		stmt.setDate(4, new java.sql.Date(getCreationDate().getTime()));
+		stmt.setString(5, getLabel());
 
 		stmt.executeUpdate();
 
@@ -216,7 +238,8 @@ public class PhraseEntry implements Serializable, DBExecutable {
 		stmt.setString(1, getRusText());
 		stmt.setString(2, getPlText());
 		stmt.setBoolean(3, isInRevisions());
-		stmt.setInt(4, getId());
+		stmt.setString(4, getLabel());
+		stmt.setInt(5, getId());
 		stmt.executeUpdate();
 	}
 

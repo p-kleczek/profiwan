@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -19,7 +20,7 @@ import javax.swing.border.EmptyBorder;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DBUtils;
 
-public class DictionaryFrame extends JFrame {
+public class DictionaryDialog extends JDialog {
 
 	private JPanel contentPane;
 	private List<PhraseEntry> dictionary;
@@ -27,7 +28,9 @@ public class DictionaryFrame extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public DictionaryFrame() {
+	public DictionaryDialog() {
+		setTitle("Dictionary");
+		setModal(true);
 		dictionary = null;
 		try {
 			dictionary = DBUtils.getDictionary();
@@ -36,7 +39,7 @@ public class DictionaryFrame extends JFrame {
 			e.printStackTrace();
 		}
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -120,18 +123,16 @@ public class DictionaryFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO: warning, gdy puste / niepelne wpisy
-				dictionaryTable.save();
-				saveDictionary();
+//				dictionaryTable.save();
+//				saveDictionary();
 				
 				// TODO: save last edited entry
-				
-//				IOUtils.writeDictionary(IOUtils.vocabularyDict, dictionary);
 			}
 		});
 		GridBagConstraints gbc_btnSave = new GridBagConstraints();
 		gbc_btnSave.gridx = 0;
 		gbc_btnSave.gridy = 2;
-		panel.add(btnSave, gbc_btnSave);
+//		panel.add(btnSave, gbc_btnSave);
 	}
 
 	private void saveDictionary() {

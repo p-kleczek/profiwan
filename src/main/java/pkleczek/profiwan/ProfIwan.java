@@ -8,8 +8,9 @@ import java.util.Date;
 import javax.swing.JFrame;
 
 import pkleczek.profiwan.debug.Debug;
-import pkleczek.profiwan.gui.DictionaryFrame;
-import pkleczek.profiwan.gui.RevisionsFrame;
+import pkleczek.profiwan.gui.DictionaryDialog;
+import pkleczek.profiwan.gui.MainFrame;
+import pkleczek.profiwan.gui.RevisionsDialog;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
@@ -39,7 +40,6 @@ public class ProfIwan {
 
 				try {
 					ProfIwan window = new ProfIwan();
-					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -53,16 +53,26 @@ public class ProfIwan {
 	public ProfIwan() {
 		prepareDB();
 		initialize();
+		
+		frame.setVisible(true);
 	}
 
 	// for tests
 	private void prepareDB() {
 		try {
 			DBUtils.recreateTables();
+			
 			PhraseEntry e = new PhraseEntry();
-			e.setRusText("x");
+			e.setRusText("x\u0301");
 			e.setPlText("y");
+			e.setCreationDate(Calendar.getInstance().getTime());
+			e.setLabel("rand");
 			e.insertDBEntry();
+			
+			e.setRusText("x");
+			e.updateDBEntry();
+			
+			Debug.printDict("revert");
 
 			Calendar cal = Calendar.getInstance();
 			RevisionEntry re = null;
@@ -79,7 +89,7 @@ public class ProfIwan {
 			re.date = cal.getTime();
 			re.mistakes = 2;
 			e.getRevisions().add(re);
-			re.insertDBEntry(2);
+			re.insertDBEntry(1);
 
 			Debug.printDict("init");
 			Debug.printRev("");
@@ -94,9 +104,7 @@ public class ProfIwan {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		// frame = new DictionaryFrame();
-		frame = new RevisionsFrame();
-		frame.setTitle("ProfIwan");
+		frame = new MainFrame();
 	}
 
 }

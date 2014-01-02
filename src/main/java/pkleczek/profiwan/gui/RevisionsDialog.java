@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -27,11 +29,13 @@ import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
 
-public class RevisionsFrame extends JFrame {
+public class RevisionsDialog extends JDialog {
 
 	enum State {
 		USER_INPUT, ANSWER
 	}
+	
+	private final RevisionsDialog instance = this; 
 
 	private State state = State.USER_INPUT;
 
@@ -45,9 +49,14 @@ public class RevisionsFrame extends JFrame {
 	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>(); // poprawki
 	// w kolejce
 	private ListIterator<PhraseEntry> revIterator = null;
+	PhraseEntry currentRevision = null;
 
 	private boolean enteredCorrectly = false;
 	private int initialNumberOfRevisions = 0;
+
+	private JButton btnEdit;
+
+	private JButton btnAccept;
 
 	private void prepareRevisions() {
 		for (PhraseEntry pe : dictionary) {
@@ -78,7 +87,7 @@ public class RevisionsFrame extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public RevisionsFrame() {
+	public RevisionsDialog() {
 		try {
 			dictionary = DBUtils.getDictionary();
 		} catch (SQLException e1) {
@@ -87,8 +96,9 @@ public class RevisionsFrame extends JFrame {
 		}
 
 		prepareRevisions();
-
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		setTitle("Revisions");
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -129,22 +139,24 @@ public class RevisionsFrame extends JFrame {
 				if (state == State.USER_INPUT) {
 					textField.setEditable(false);
 
-					PhraseEntry pe = revIterator.next();
+					currentRevision = revIterator.next();
 
-					enteredCorrectly = pe.getRusText().equals(
+					enteredCorrectly = currentRevision.getRusText().equals(
 							textField.getText());
 					if (enteredCorrectly) {
 						// correct
-						confirmRevision(pe);
+						confirmRevision(currentRevision);
 
 						lblCorrect.setText("OK");
 						lblStats.setText(initialNumberOfRevisions
 								- pendingRevisions.size() + " / "
 								+ initialNumberOfRevisions);
 					} else {
-						lblCorrect.setText("Correct: " + pe.getRusText());
-						lblCorrect.setForeground(Color.red);
 						// incorrect
+						lblCorrect.setText("Correct: " + currentRevision.getRusText());
+						lblCorrect.setForeground(Color.red);
+						btnEdit.setEnabled(true);
+						btnAccept.setEnabled(true);
 					}
 					state = State.ANSWER;
 				} else {
@@ -163,6 +175,7 @@ public class RevisionsFrame extends JFrame {
 		JButton btnStop = new JButton("Stop");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				dispose();
 			}
 		});
 		GridBagConstraints gbc_btnStop = new GridBagConstraints();
@@ -178,18 +191,40 @@ public class RevisionsFrame extends JFrame {
 		gbc_lblNewLabel.gridy = 1;
 		contentPane.add(lblCorrect, gbc_lblNewLabel);
 
-		JButton btnEdit = new JButton("Edit");
+		btnEdit = new JButton("Edit");
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				String s = (String)JOptionPane.showInputDialog(
+	                    instance,
+	                    "New version:",
+	                    "Customized Dialog",
+	                    JOptionPane.PLAIN_MESSAGE,
+	                    null,
+	                    null,
+	                    currentRevision.getRusText());
+				
+				s = s.replace(DictionaryTable.ACCENT_MARKER, "\u0301");
+				
+				currentRevision.setRusText(s);
+				
+				try {
+					currentRevision.updateDBEntry();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				textField.requestFocus();
 			}
 		});
+		btnEdit.setEnabled(false);
 		GridBagConstraints gbc_btnEdit = new GridBagConstraints();
 		gbc_btnEdit.insets = new Insets(0, 0, 5, 0);
 		gbc_btnEdit.gridx = 1;
 		gbc_btnEdit.gridy = 1;
 		contentPane.add(btnEdit, gbc_btnEdit);
 
-		JButton btnAccept = new JButton("Accept");
+		btnAccept = new JButton("Accept");
 		btnAccept.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (state == State.ANSWER && !enteredCorrectly) {
@@ -198,6 +233,7 @@ public class RevisionsFrame extends JFrame {
 				}
 			}
 		});
+		btnAccept.setEnabled(false);
 		GridBagConstraints gbc_btnAccept = new GridBagConstraints();
 		gbc_btnAccept.insets = new Insets(0, 0, 5, 0);
 		gbc_btnAccept.gridx = 1;
@@ -208,6 +244,8 @@ public class RevisionsFrame extends JFrame {
 		gbc_lblCorrect.gridx = 1;
 		gbc_lblCorrect.gridy = 3;
 		contentPane.add(lblStats, gbc_lblCorrect);
+		
+		pack();
 	}
 
 	private void confirmRevision(PhraseEntry pe) {
@@ -229,9 +267,12 @@ public class RevisionsFrame extends JFrame {
 	}
 
 	private void nextWord() {
+		btnEdit.setEnabled(false);
+		btnAccept.setEnabled(false);
+		
 		if (pendingRevisions.isEmpty()) {
 			// TODO: koniec powtorek :)
-			System.exit(0);
+			dispose();
 		} else {
 			if (!revIterator.hasNext()) {
 				revIterator = pendingRevisions.listIterator();
@@ -248,5 +289,9 @@ public class RevisionsFrame extends JFrame {
 		}
 
 		state = State.USER_INPUT;
+	}
+	
+	public boolean hasRevisions() {
+		return !pendingRevisions.isEmpty();
 	}
 }
