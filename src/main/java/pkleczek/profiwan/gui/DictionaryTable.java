@@ -5,30 +5,32 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
-import java.util.prefs.Preferences;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
-import pkleczek.profiwan.ProfIwan;
+import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
 
+@SuppressWarnings("serial")
 public class DictionaryTable extends JTable {
 
 	private static final DateFormat dateOutputFormatter = new SimpleDateFormat(
-			"yyyy-mm-dd");
+			"yyyy-mm-dd"); //$NON-NLS-1$
 
 	private static final int RUS_COLUMN = 0;
 	private static final int PL_COLUMN = 1;
 	private static final int REV_COLUMN = 2;
 	private static final int LABEL_COLUMN = 3;
 
-	public static final CharSequence ACCENT_MARKER = "\\";
+	public static final CharSequence ACCENT_MARKER = "\\"; //$NON-NLS-1$
 
-	private static String[] columnNames = { "RUS", "PL", "label", "rev", "date" };
+	private static String[] columnNames = {
+			"RUS", "PL", Messages.getString("DictionaryTable.label"), Messages.getString("DictionaryTable.isRevised"), Messages.getString("DictionaryTable.created") }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 	private final DefaultTableModel dtm = new DefaultTableModel(null,
 			columnNames);
 
@@ -37,7 +39,7 @@ public class DictionaryTable extends JTable {
 	private int lastModifiedEntryId = -1;
 
 	private DictionaryTable instance = this;
-	
+
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		setModel(dtm);
 
@@ -59,7 +61,7 @@ public class DictionaryTable extends JTable {
 					String val = (String) dtm.getValueAt(row, col);
 
 					if (val.contains(ACCENT_MARKER)) {
-						val = val.replace(ACCENT_MARKER, "\u0301");
+						val = val.replace(ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
 						dtm.setValueAt(val, row, col);
 					}
 
@@ -85,18 +87,19 @@ public class DictionaryTable extends JTable {
 					try {
 						instance.dictionary.get(row).updateDBEntry();
 					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						JOptionPane.showMessageDialog(
+								null,
+								Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 
-					Debug.printDict("update");
+					Debug.printDict("update"); //$NON-NLS-1$
 				}
 			}
 		});
 	}
 
 	private void addRowToDTM(PhraseEntry pe) {
-		String isInRevisionStr = pe.isInRevisions() ? "y" : "";
+		String isInRevisionStr = pe.isInRevisions() ? "y" : ""; //$NON-NLS-1$ //$NON-NLS-2$
 		dtm.addRow(new Object[] { pe.getRusText(), pe.getPlText(),
 				pe.getLabel(), isInRevisionStr,
 				dateOutputFormatter.format(pe.getCreationDate()) });
@@ -111,13 +114,15 @@ public class DictionaryTable extends JTable {
 		try {
 			entry.insertDBEntry();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane
+					.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
 		dictionary.add(entry);
 
-		Debug.printDict("add");
+		Debug.printDict("add"); //$NON-NLS-1$
 	}
 
 	public void removeSelectedRow() {
@@ -129,14 +134,16 @@ public class DictionaryTable extends JTable {
 			try {
 				dictionary.get(selectedRowInx).deleteDBEntry();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				JOptionPane
+						.showMessageDialog(
+								null,
+								Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
 			dictionary.remove(selectedRowInx);
 
-			Debug.printDict("delete");
-			Debug.printRev("del");
+			Debug.printDict("delete"); //$NON-NLS-1$
+			Debug.printRev("del"); //$NON-NLS-1$
 		}
 	}
 
@@ -144,22 +151,4 @@ public class DictionaryTable extends JTable {
 		return lastModifiedEntryId;
 	}
 
-	public void save() {
-		for (PhraseEntry e : dictionary) {
-			System.out.println(String.format(e.getRusText() + " "
-					+ e.getPlText()));
-		}
-		System.out.println("---");
-
-		// int nRow = dtm.getRowCount();
-		// int nCol = dtm.getColumnCount();
-		//
-		// for (int i = 0; i < nRow; i++) {
-		// for (int j = 0; j < nCol; j++)
-		// tableData[i][j] = dtm.getValueAt(i, j);
-		// }
-
-		// TODO: odszukaj wpisu z dana nazwa, zamien dane
-		// TODO: dodaj nowe zwroty
-	}
 }

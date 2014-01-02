@@ -10,16 +10,17 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 
+import pkleczek.Messages;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DBUtils;
 
+@SuppressWarnings("serial")
 public class DictionaryDialog extends JDialog {
 
 	private JPanel contentPane;
@@ -28,16 +29,10 @@ public class DictionaryDialog extends JDialog {
 	/**
 	 * Create the frame.
 	 */
-	public DictionaryDialog() {
-		setTitle("Dictionary");
+	public DictionaryDialog() throws SQLException {
+		setTitle(Messages.getString("DictionaryDialog.title")); //$NON-NLS-1$
 		setModal(true);
-		dictionary = null;
-		try {
-			dictionary = DBUtils.getDictionary();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		dictionary = DBUtils.getDictionary();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -83,7 +78,7 @@ public class DictionaryDialog extends JDialog {
 		gbl_panel.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		JButton btnAdd = new JButton("+");
+		JButton btnAdd = new JButton("+"); //$NON-NLS-1$
 		btnAdd.addActionListener(new ActionListener() {
 
 			@Override
@@ -97,14 +92,14 @@ public class DictionaryDialog extends JDialog {
 		gbc_btnAdd.gridy = 0;
 		panel.add(btnAdd, gbc_btnAdd);
 
-		JButton btnRemove = new JButton("-");
+		JButton btnRemove = new JButton("-"); //$NON-NLS-1$
 		btnRemove.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 
 				int retVal = JOptionPane.showConfirmDialog(null,
-						"Are you sure?", "Warning", JOptionPane.YES_NO_OPTION);
+						Messages.getString("DictionaryDialog.confirmDeletionInfo"), Messages.getString("DictionaryDialog.confirmDeletionTitle"), JOptionPane.YES_NO_OPTION); //$NON-NLS-1$ //$NON-NLS-2$
 
 				if (retVal == JOptionPane.YES_OPTION) {
 					dictionaryTable.removeSelectedRow();
@@ -117,32 +112,18 @@ public class DictionaryDialog extends JDialog {
 		gbc_btnRemove.gridy = 1;
 		panel.add(btnRemove, gbc_btnRemove);
 
-		JButton btnSave = new JButton("Save");
+		JButton btnSave = new JButton(Messages.getString("DictionaryDialog.save")); //$NON-NLS-1$
 		btnSave.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO: warning, gdy puste / niepelne wpisy
 //				dictionaryTable.save();
-//				saveDictionary();
-				
-				// TODO: save last edited entry
 			}
 		});
 		GridBagConstraints gbc_btnSave = new GridBagConstraints();
 		gbc_btnSave.gridx = 0;
 		gbc_btnSave.gridy = 2;
 //		panel.add(btnSave, gbc_btnSave);
-	}
-
-	private void saveDictionary() {
-		for (PhraseEntry pe : dictionary) {
-			try {
-				pe.insertDBEntry();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 	}
 }

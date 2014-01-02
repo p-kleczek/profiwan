@@ -1,15 +1,12 @@
 package pkleczek.profiwan.gui;
 
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,18 +14,19 @@ import java.util.ListIterator;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
 
+@SuppressWarnings("serial")
 public class RevisionsDialog extends JDialog {
 
 	enum State {
@@ -74,12 +72,12 @@ public class RevisionsDialog extends JDialog {
 
 		// XXX: docelowo - brak mo¿liwosci robienia powtorek, gdy nie ma co powtarzac ;)
 		if (pendingRevisions.isEmpty()) {
-			lblPolish.setText("");
-			lblStats.setText("-");
+			lblPolish.setText(""); //$NON-NLS-1$
+			lblStats.setText("-"); //$NON-NLS-1$
 		} else {
 			lblPolish.setText(pendingRevisions.getFirst().getPlText());
 			initialNumberOfRevisions = pendingRevisions.size();
-			lblStats.setText("0 / " + initialNumberOfRevisions);
+			lblStats.setText("0 / " + initialNumberOfRevisions); //$NON-NLS-1$
 			revIterator = pendingRevisions.listIterator();
 		}
 	}
@@ -97,7 +95,7 @@ public class RevisionsDialog extends JDialog {
 
 		prepareRevisions();
 		
-		setTitle("Revisions");
+		setTitle(Messages.getString("RevisionsDialog.revisions")); //$NON-NLS-1$
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -147,13 +145,13 @@ public class RevisionsDialog extends JDialog {
 						// correct
 						confirmRevision(currentRevision);
 
-						lblCorrect.setText("OK");
+						lblCorrect.setText(Messages.getString("ok")); //$NON-NLS-1$
 						lblStats.setText(initialNumberOfRevisions
-								- pendingRevisions.size() + " / "
+								- pendingRevisions.size() + " / " //$NON-NLS-1$
 								+ initialNumberOfRevisions);
 					} else {
 						// incorrect
-						lblCorrect.setText("Correct: " + currentRevision.getRusText());
+						lblCorrect.setText(Messages.getString("RevisionsDialog.correct") + currentRevision.getRusText()); //$NON-NLS-1$
 						lblCorrect.setForeground(Color.red);
 						btnEdit.setEnabled(true);
 						btnAccept.setEnabled(true);
@@ -172,7 +170,7 @@ public class RevisionsDialog extends JDialog {
 		gbc_textField.gridy = 1;
 		panel.add(textField, gbc_textField);
 
-		JButton btnStop = new JButton("Stop");
+		JButton btnStop = new JButton(Messages.getString("RevisionsDialog.stop")); //$NON-NLS-1$
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -191,19 +189,19 @@ public class RevisionsDialog extends JDialog {
 		gbc_lblNewLabel.gridy = 1;
 		contentPane.add(lblCorrect, gbc_lblNewLabel);
 
-		btnEdit = new JButton("Edit");
+		btnEdit = new JButton(Messages.getString("RevisionsDialog.edit")); //$NON-NLS-1$
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String s = (String)JOptionPane.showInputDialog(
 	                    instance,
-	                    "New version:",
-	                    "Customized Dialog",
+	                    Messages.getString("RevisionsDialog.newVersion"), //$NON-NLS-1$
+	                    Messages.getString("RevisionsDialog.editWord"), //$NON-NLS-1$
 	                    JOptionPane.PLAIN_MESSAGE,
 	                    null,
 	                    null,
 	                    currentRevision.getRusText());
 				
-				s = s.replace(DictionaryTable.ACCENT_MARKER, "\u0301");
+				s = s.replace(DictionaryTable.ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
 				
 				currentRevision.setRusText(s);
 				
@@ -224,7 +222,7 @@ public class RevisionsDialog extends JDialog {
 		gbc_btnEdit.gridy = 1;
 		contentPane.add(btnEdit, gbc_btnEdit);
 
-		btnAccept = new JButton("Accept");
+		btnAccept = new JButton(Messages.getString("RevisionsDialog.accept")); //$NON-NLS-1$
 		btnAccept.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (state == State.ANSWER && !enteredCorrectly) {
@@ -263,7 +261,7 @@ public class RevisionsDialog extends JDialog {
 			e.printStackTrace();
 		}
 
-		Debug.printRev("conf");
+		Debug.printRev("conf"); //$NON-NLS-1$
 	}
 
 	private void nextWord() {
@@ -282,9 +280,9 @@ public class RevisionsDialog extends JDialog {
 					.getPlText());
 
 			textField.setEditable(true);
-			textField.setText("");
+			textField.setText(""); //$NON-NLS-1$
 
-			lblCorrect.setText("");
+			lblCorrect.setText(""); //$NON-NLS-1$
 			lblCorrect.setForeground(Color.BLACK);
 		}
 

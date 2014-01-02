@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,7 +43,7 @@ public class PhraseEntry implements Serializable, DBExecutable {
 	public static int FREQUENCY_DECAY = 2;
 
 	/**
-	 * TODO: blad => reset postepow we FREQ do podanego ulamka
+	 * blad => reset postepow we FREQ do podanego ulamka
 	 */
 	private static double MISTAKE_MULTIPLIER = 0.5;
 
@@ -81,10 +79,10 @@ public class PhraseEntry implements Serializable, DBExecutable {
 
 	private int id;
 
-	private String plText = "";
-	private String rusText = "";
+	private String plText = ""; //$NON-NLS-1$
+	private String rusText = ""; //$NON-NLS-1$
 	private Date creationDate = null;
-	private String label = "";
+	private String label = ""; //$NON-NLS-1$
 
 	public Date getCreationDate() {
 		return creationDate;
@@ -141,7 +139,6 @@ public class PhraseEntry implements Serializable, DBExecutable {
 		this.inRevisions = inRevisions;
 	}
 
-	// TODO: testowac !!
 	public boolean isReviseNow() {
 		int freq = getRevisionFrequency();
 
@@ -220,7 +217,7 @@ public class PhraseEntry implements Serializable, DBExecutable {
 				setId(generatedKeys.getInt(1));
 			} else {
 				throw new SQLException(
-						"PhraseEntry: no generated key obtained.");
+						"PhraseEntry: no generated key obtained."); //$NON-NLS-1$
 			}
 		} finally {
 			if (generatedKeys != null)
@@ -254,11 +251,11 @@ public class PhraseEntry implements Serializable, DBExecutable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\'\n", getId(),
+		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\'\n", getId(), //$NON-NLS-1$
 				getRusText(), getPlText()));
 
 		for (RevisionEntry re : revisions) {
-			sb.append(String.format("\t%s [%d]\n", re.date.toString(),
+			sb.append(String.format("\t%s [%d]\n", re.date.toString(), //$NON-NLS-1$
 					re.mistakes));
 		}
 

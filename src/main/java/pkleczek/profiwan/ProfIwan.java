@@ -1,24 +1,39 @@
 package pkleczek.profiwan;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
 import pkleczek.profiwan.debug.Debug;
-import pkleczek.profiwan.gui.DictionaryDialog;
 import pkleczek.profiwan.gui.MainFrame;
-import pkleczek.profiwan.gui.RevisionsDialog;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
 
 public class ProfIwan {
 
+	private static final String LOG_FILENAME = "log.txt"; //$NON-NLS-1$
+	
 	private JFrame frame;
-
+	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	private static FileHandler fileTxt;
+	
+	{
+		try {
+			fileTxt = new FileHandler(LOG_FILENAME);
+			logger.addHandler(fileTxt);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Launch the application.
 	 */
@@ -32,16 +47,15 @@ public class ProfIwan {
 						try {
 							DBUtils.getConnection().close();
 						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.severe(e.toString());
 						}
 					}
 				});
 
 				try {
-					ProfIwan window = new ProfIwan();
+					new ProfIwan();
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.severe(e.toString());
 				}
 			}
 		});
@@ -52,8 +66,8 @@ public class ProfIwan {
 	 */
 	public ProfIwan() {
 		prepareDB();
-		initialize();
 		
+		frame = new MainFrame();
 		frame.setVisible(true);
 	}
 
@@ -63,17 +77,15 @@ public class ProfIwan {
 			DBUtils.recreateTables();
 			
 			PhraseEntry e = new PhraseEntry();
-			e.setRusText("x\u0301");
-			e.setPlText("y");
+			e.setRusText("x"); //$NON-NLS-1$
+			e.setPlText("y"); //$NON-NLS-1$
 			e.setCreationDate(Calendar.getInstance().getTime());
-			e.setLabel("rand");
+			e.setLabel("rand"); //$NON-NLS-1$
 			e.insertDBEntry();
 			
-			e.setRusText("x");
+			e.setRusText("x"); //$NON-NLS-1$
 			e.updateDBEntry();
 			
-			Debug.printDict("revert");
-
 			Calendar cal = Calendar.getInstance();
 			RevisionEntry re = null;
 
@@ -91,20 +103,12 @@ public class ProfIwan {
 			e.getRevisions().add(re);
 			re.insertDBEntry(1);
 
-			Debug.printDict("init");
-			Debug.printRev("");
+			Debug.printDict("init"); //$NON-NLS-1$
+			Debug.printRev("init"); //$NON-NLS-1$
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Initialize the contents of the frame.
-	 */
-	private void initialize() {
-		frame = new MainFrame();
 	}
 
 }
