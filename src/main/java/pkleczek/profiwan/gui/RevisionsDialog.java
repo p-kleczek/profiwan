@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -34,6 +35,7 @@ public class RevisionsDialog extends JDialog {
 	}
 	
 	private final RevisionsDialog instance = this; 
+	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	private State state = State.USER_INPUT;
 
@@ -70,7 +72,6 @@ public class RevisionsDialog extends JDialog {
 			pendingRevisions.add(pe);
 		}
 
-		// XXX: docelowo - brak mo¿liwosci robienia powtorek, gdy nie ma co powtarzac ;)
 		if (pendingRevisions.isEmpty()) {
 			lblPolish.setText(""); //$NON-NLS-1$
 			lblStats.setText("-"); //$NON-NLS-1$
@@ -85,13 +86,8 @@ public class RevisionsDialog extends JDialog {
 	/**
 	 * Create the frame.
 	 */
-	public RevisionsDialog() {
-		try {
-			dictionary = DBUtils.getDictionary();
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+	public RevisionsDialog() throws SQLException {
+		dictionary = DBUtils.getDictionary();
 
 		prepareRevisions();
 		
@@ -208,8 +204,10 @@ public class RevisionsDialog extends JDialog {
 				try {
 					currentRevision.updateDBEntry();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+					logger.severe(e.toString());
 				}
 				
 				textField.requestFocus();
@@ -253,12 +251,13 @@ public class RevisionsDialog extends JDialog {
 		pe.getRevisions().add(re);
 		revIterator.remove();
 
-		// TODO: insert re into db
 		try {
 			re.insertDBEntry(pe.getId());
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(
+					null,
+					Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+			logger.severe(e.toString());
 		}
 
 		Debug.printRev("conf"); //$NON-NLS-1$
@@ -269,7 +268,6 @@ public class RevisionsDialog extends JDialog {
 		btnAccept.setEnabled(false);
 		
 		if (pendingRevisions.isEmpty()) {
-			// TODO: koniec powtorek :)
 			dispose();
 		} else {
 			if (!revIterator.hasNext()) {

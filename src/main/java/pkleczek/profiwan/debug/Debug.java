@@ -26,7 +26,6 @@ public class Debug {
 			System.out.println("------------");
 			System.out.println();
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
@@ -53,7 +52,6 @@ public class Debug {
 			System.out.println("------------");
 			System.out.println();
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} finally {
 			try {

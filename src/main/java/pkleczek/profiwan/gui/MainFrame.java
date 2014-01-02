@@ -51,15 +51,23 @@ public class MainFrame extends JFrame {
 		JButton btnRevisions = new JButton(Messages.getString("MainFrame.revisions")); //$NON-NLS-1$
 		btnRevisions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RevisionsDialog dlg = new RevisionsDialog();
-				
-				if (dlg.hasRevisions()) {
-					dlg.setVisible(true);
-				} else {
-					JOptionPane.showMessageDialog(dlg, Messages.getString("MainFrame.noPendingRevisions")); //$NON-NLS-1$
-					dlg.dispose();
-					return;
+				RevisionsDialog dlg;
+				try {
+					dlg = new RevisionsDialog();
+					if (dlg.hasRevisions()) {
+						dlg.setVisible(true);
+					} else {
+						JOptionPane.showMessageDialog(dlg, Messages.getString("MainFrame.noPendingRevisions")); //$NON-NLS-1$
+						dlg.dispose();
+						return;
+					}
+				} catch (SQLException e1) {
+					JOptionPane.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+					logger.severe(e1.toString());
 				}
+				
 				
 			}
 		});

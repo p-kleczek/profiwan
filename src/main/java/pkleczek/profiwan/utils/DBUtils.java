@@ -10,8 +10,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import org.sqlite.SQLiteConfig;
 
+import pkleczek.Messages;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 
@@ -28,21 +31,19 @@ public class DBUtils {
 	static {
 		try {
 			Class.forName("org.sqlite.JDBC");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+			SQLiteConfig conf = new SQLiteConfig();
+			conf.enforceForeignKeys(true);
+			c = DriverManager.getConnection("jdbc:sqlite:profiwan.db",
+					conf.toProperties());
+		} catch (ClassNotFoundException | SQLException e) {
+			JOptionPane
+					.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			System.exit(-1);
 		}
 
-		try {
-			SQLiteConfig conf = new SQLiteConfig();
-			conf.enforceForeignKeys(true);
-			c = DriverManager.getConnection("jdbc:sqlite:profiwan.db", conf.toProperties());
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(-1);
-		}
 
 		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1,lang2,inRevision,date,label) "
 				+ "VALUES (NULL, ?, ?, ?, ?, ?);";
@@ -50,13 +51,11 @@ public class DBUtils {
 		String updatePhraseEntryQuery = "UPDATE Phrase SET lang1 = ?, lang2 = ?, inRevision = ?, label = ? WHERE idPhrase = ?;";
 
 		String deletePhraseEntryQuery = "DELETE FROM Phrase WHERE idPhrase = ?;";
-		
+
 		String selectRevisionEntryQuery = "SELECT * FROM Revision WHERE Phrase_idPhrase = ?;";
-		
+
 		String insertRevisionEntryQuery = "INSERT INTO Revision (idRevision,date,mistakes,Phrase_idPhrase) "
 				+ "VALUES (NULL, ?, ?, ?) ;";
-
-
 
 		try {
 			insertPhraseEntry = getConnection().prepareStatement(
@@ -74,11 +73,13 @@ public class DBUtils {
 			insertRevisionEntry = getConnection().prepareStatement(
 					insertRevisionEntryQuery);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane
+			.showMessageDialog(
+					null,
+					Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			System.exit(-1);
 		}
-		
+
 	}
 
 	private DBUtils() {
@@ -118,12 +119,12 @@ public class DBUtils {
 
 				dict.add(entry);
 			}
-			
+
 			PreparedStatement pstmt = DBUtils.selectRevisionEntry;
 			for (PhraseEntry entry : dict) {
 				pstmt.setInt(1, entry.getId());
 				rs = pstmt.executeQuery();
-				
+
 				while (rs.next()) {
 					RevisionEntry re = new RevisionEntry();
 					re.date = rs.getDate("date");
@@ -132,7 +133,7 @@ public class DBUtils {
 					entry.getRevisions().add(re);
 				}
 			}
-			
+
 		} finally {
 			try {
 				rs.close();
@@ -157,7 +158,6 @@ public class DBUtils {
 
 		try {
 			stmt.executeUpdate(query);
-			// XXX: conn.commit();
 		} finally {
 			try {
 				stmt.close();
@@ -171,10 +171,8 @@ public class DBUtils {
 
 		String queryPhrase = "CREATE TABLE IF NOT EXISTS Phrase "
 				+ "(idPhrase 		INTEGER PRIMARY KEY	AUTOINCREMENT,"
-				+ " lang1			TEXT	NOT NULL,"
-				+ " lang2			TEXT	NOT NULL,"
-				+ " date			DATETIME NOT NULL,"
-				+ " label			TEXT	NOT NULL,"
+				+ " lang1			TEXT	NOT NULL," + " lang2			TEXT	NOT NULL,"
+				+ " date			DATETIME NOT NULL," + " label			TEXT	NOT NULL,"
 				+ " inRevision		BOOLEAN);";
 
 		String queryRevision = "CREATE TABLE IF NOT EXISTS Revision "
@@ -183,9 +181,7 @@ public class DBUtils {
 				+ " mistakes		INTEGER	NOT NULL, "
 				+ " Phrase_idPhrase		INTEGER	NOT NULL,"
 				+ " FOREIGN KEY(Phrase_idPhrase) REFERENCES Phrase(idPhrase)"
-				+ " ON DELETE CASCADE"
-				+ " ON UPDATE CASCADE"
-				+ ");";
+				+ " ON DELETE CASCADE" + " ON UPDATE CASCADE" + ");";
 
 		Connection conn = DBUtils.getConnection();
 		Statement stmt = conn.createStatement();
