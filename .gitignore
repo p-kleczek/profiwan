@@ -6,5 +6,9 @@
 *.ear
 /bin
 
-log.txt
+# Debug files
+log.txt*
 profiwan_debug.db
+
+# Backups
+/db_saves

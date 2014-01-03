@@ -42,7 +42,7 @@ public class Debug {
 			rs = stmt.executeQuery("SELECT * FROM Revision");
 			
 			while (rs.next()) {
-				Date date = rs.getDate("date");
+				Date date = new Date((long) rs.getInt("revDate")*1000L);
 				int mistakes = rs.getInt("mistakes");
 				int phrId = rs.getInt("Phrase_idPhrase");
 

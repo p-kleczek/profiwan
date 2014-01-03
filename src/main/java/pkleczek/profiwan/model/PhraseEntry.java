@@ -1,6 +1,5 @@
 package pkleczek.profiwan.model;
 
-import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +18,7 @@ import pkleczek.profiwan.utils.DBUtils;
  * @author Pawel
  * 
  */
-public class PhraseEntry implements Serializable, DBExecutable {
+public class PhraseEntry implements DBExecutable {
 
 	/**
 	 * Maximum number of days between two consecutive revisions.
@@ -47,8 +46,6 @@ public class PhraseEntry implements Serializable, DBExecutable {
 	 */
 	private static double MISTAKE_MULTIPLIER = 0.5;
 
-	private static final long serialVersionUID = 5318708654536022199L;
-
 	/**
 	 * The <code>RevisionEntry</code> class stores all information about a
 	 * revision relevant for generation of further revisions.
@@ -56,8 +53,7 @@ public class PhraseEntry implements Serializable, DBExecutable {
 	 * @author Pawel
 	 * 
 	 */
-	public static class RevisionEntry implements Serializable {
-		private static final long serialVersionUID = 939716563607754267L;
+	public static class RevisionEntry {
 
 		public Date date;
 
@@ -70,11 +66,20 @@ public class PhraseEntry implements Serializable, DBExecutable {
 
 			PreparedStatement stmt = DBUtils.insertRevisionEntry;
 
-			stmt.setDate(1, new java.sql.Date(date.getTime()));
+			stmt.setInt(1, (int) (date.getTime()/1000));
 			stmt.setInt(2, mistakes);
 			stmt.setInt(3, revisionEntryId);
 			stmt.executeUpdate();
 		}
+		
+		public static void updateDBEntry(int revisionEntryId, int mistakes) throws SQLException {
+
+			PreparedStatement stmt = DBUtils.updateRevisionEntry;
+
+			stmt.setInt(1, mistakes);
+			stmt.setInt(2, revisionEntryId);
+			stmt.executeUpdate();
+		}		
 	}
 
 	private int id;
@@ -205,7 +210,7 @@ public class PhraseEntry implements Serializable, DBExecutable {
 		stmt.setString(1, getRusText());
 		stmt.setString(2, getPlText());
 		stmt.setInt(3, ir);
-		stmt.setDate(4, new java.sql.Date(getCreationDate().getTime()));
+		stmt.setInt(4, (int) (getCreationDate().getTime()/1000));
 		stmt.setString(5, getLabel());
 
 		stmt.executeUpdate();
@@ -251,8 +256,8 @@ public class PhraseEntry implements Serializable, DBExecutable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\'\n", getId(), //$NON-NLS-1$
-				getRusText(), getPlText()));
+		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\' [%s]\n", getId(), //$NON-NLS-1$
+				getRusText(), getPlText(), getCreationDate()));
 
 		for (RevisionEntry re : revisions) {
 			sb.append(String.format("\t%s [%d]\n", re.date.toString(), //$NON-NLS-1$

@@ -9,17 +9,20 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
 import org.sqlite.SQLiteConfig;
 
 import pkleczek.Messages;
+import pkleczek.profiwan.ProfIwan;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 
 public class DBUtils {
 
+	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static Connection c = null;
 
 	public static PreparedStatement insertPhraseEntry = null;
@@ -27,6 +30,7 @@ public class DBUtils {
 	public static PreparedStatement deletePhraseEntry = null;
 	private static PreparedStatement selectRevisionEntry = null;
 	public static PreparedStatement insertRevisionEntry = null;
+	public static PreparedStatement updateRevisionEntry = null;
 
 	public static final String prodDb = "jdbc:sqlite:profiwan.db";
 	public static final String debugDb = "jdbc:sqlite:profiwan_debug.db";
@@ -37,7 +41,10 @@ public class DBUtils {
 
 			SQLiteConfig conf = new SQLiteConfig();
 			conf.enforceForeignKeys(true);
-			c = DriverManager.getConnection(debugDb, conf.toProperties());
+			
+			String modeURL = ProfIwan.inDebugMode ? debugDb : prodDb;
+			
+			c = DriverManager.getConnection(modeURL, conf.toProperties());
 		} catch (ClassNotFoundException | SQLException e) {
 			JOptionPane
 					.showMessageDialog(
@@ -46,17 +53,19 @@ public class DBUtils {
 			System.exit(-1);
 		}
 
-		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1,lang2,inRevision,date,label) "
+		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1,lang2,inRevision,createdOn,label) "
 				+ "VALUES (NULL, ?, ?, ?, ?, ?);";
 
 		String updatePhraseEntryQuery = "UPDATE Phrase SET lang1 = ?, lang2 = ?, inRevision = ?, label = ? WHERE idPhrase = ?;";
 
 		String deletePhraseEntryQuery = "DELETE FROM Phrase WHERE idPhrase = ?;";
 
-		String selectRevisionEntryQuery = "SELECT * FROM Revision WHERE Phrase_idPhrase = ?;";
+		String selectRevisionEntryQuery = "SELECT * FROM Revision WHERE Phrase_idPhrase = ? ORDER BY revDate;";
 
-		String insertRevisionEntryQuery = "INSERT INTO Revision (idRevision,date,mistakes,Phrase_idPhrase) "
+		String insertRevisionEntryQuery = "INSERT INTO Revision (idRevision,revDate,mistakes,Phrase_idPhrase) "
 				+ "VALUES (NULL, ?, ?, ?) ;";
+
+		String updateRevisionEntryQuery = "UPDATE Revision SET mistakes = ? WHERE Phrase_idPhrase = ? AND date(revDate, 'unixepoch') = date('now');";
 
 		try {
 			insertPhraseEntry = getConnection().prepareStatement(
@@ -73,11 +82,16 @@ public class DBUtils {
 
 			insertRevisionEntry = getConnection().prepareStatement(
 					insertRevisionEntryQuery);
+
+			updateRevisionEntry = getConnection().prepareStatement(
+					updateRevisionEntryQuery);
 		} catch (SQLException e) {
 			JOptionPane
 					.showMessageDialog(
 							null,
 							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+			logger.severe(e.toString());
+			System.err.println(e);
 			System.exit(-1);
 		}
 
@@ -107,7 +121,7 @@ public class DBUtils {
 				String lang1 = rs.getString("lang1");
 				String lang2 = rs.getString("lang2");
 				boolean inRevision = rs.getBoolean("inRevision");
-				Date date = rs.getDate("date");
+				Date date = new Date((long) rs.getInt("createdOn")*1000L);
 				String label = rs.getString("label");
 
 				PhraseEntry entry = new PhraseEntry();
@@ -128,7 +142,7 @@ public class DBUtils {
 
 				while (rs.next()) {
 					RevisionEntry re = new RevisionEntry();
-					re.date = rs.getDate("date");
+					re.date = new Date((long) rs.getInt("revDate")*1000L);
 					re.mistakes = rs.getInt("mistakes");
 
 					entry.getRevisions().add(re);
@@ -173,12 +187,12 @@ public class DBUtils {
 		String queryPhrase = "CREATE TABLE IF NOT EXISTS Phrase "
 				+ "(idPhrase 		INTEGER PRIMARY KEY	AUTOINCREMENT,"
 				+ " lang1			TEXT	NOT NULL," + " lang2			TEXT	NOT NULL,"
-				+ " date			DATETIME NOT NULL," + " label			TEXT	NOT NULL,"
+				+ " createdOn			INTEGER NOT NULL," + " label			TEXT	NOT NULL,"
 				+ " inRevision		BOOLEAN);";
 
 		String queryRevision = "CREATE TABLE IF NOT EXISTS Revision "
 				+ "(idRevision 		INTEGER PRIMARY KEY	AUTOINCREMENT,"
-				+ " date			DATETIME	NOT NULL, "
+				+ " revDate			INTEGER	NOT NULL, "
 				+ " mistakes		INTEGER	NOT NULL, "
 				+ " Phrase_idPhrase		INTEGER	NOT NULL,"
 				+ " FOREIGN KEY(Phrase_idPhrase) REFERENCES Phrase(idPhrase)"
