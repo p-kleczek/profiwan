@@ -3,12 +3,12 @@ package pkleczek.profiwan;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+
+import org.joda.time.DateTime;
 
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.MainFrame;
@@ -24,7 +24,7 @@ public class ProfIwan {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static FileHandler fileTxt;
 
-	public static boolean inDebugMode = false;
+	public static boolean inDebugMode = true;
 
 	{
 		try {
@@ -68,6 +68,8 @@ public class ProfIwan {
 	 * Create the application.
 	 */
 	public ProfIwan() {
+		System.setProperty("org.joda.time.DateTimeZone.Provider", "org.joda.time.tz.UTCProvider");
+		
 		// test
 		if (inDebugMode) {
 			prepareDB();
@@ -88,45 +90,41 @@ public class ProfIwan {
 			PhraseEntry e = new PhraseEntry();
 			e.setRusText("x"); //$NON-NLS-1$
 			e.setPlText("y"); //$NON-NLS-1$
-			e.setCreationDate(Calendar.getInstance().getTime());
+			e.setCreationDate(DateTime.now());
 			e.setLabel("rand"); //$NON-NLS-1$
+			e.setInRevisions(true);
 			e.insertDBEntry();
 
 			e.setRusText("x"); //$NON-NLS-1$
 			e.updateDBEntry();
 
-			Calendar cal = Calendar.getInstance();
 			RevisionEntry re = null;
 
 			re = new RevisionEntry();
-			cal.set(2012, 12, 13);
-			re.date = cal.getTime();
+			re.date = new DateTime(2013, 12, 5, 10, 15, 8);
 			re.mistakes = 3;
 			e.getRevisions().add(re);
 			re.insertDBEntry(1);
 
 			re = new RevisionEntry();
-			cal.set(2013, 12, 12);
-			re.date = cal.getTime();
+			re.date = new DateTime(2014, 1, 2, 10, 15, 8);
 			re.mistakes = 2;
 			e.getRevisions().add(re);
 			re.insertDBEntry(1);
-
-			re = new RevisionEntry();
-			cal.set(2013, 12, 15);
-			re.date = cal.getTime();
-			re.mistakes = 2;
-			e.getRevisions().add(re);
-			re.insertDBEntry(1);
-
-			re = new RevisionEntry();
-			cal = Calendar.getInstance();
-			re.date = cal.getTime();
-			re.mistakes = 2;
-			e.getRevisions().add(re);
-			re.insertDBEntry(1);
-
-			RevisionEntry.updateDBEntry(1, 5);
+//
+//			re = new RevisionEntry();
+//			cal.set(2013, 12, 15);
+//			re.date = cal.getTime();
+//			re.mistakes = 2;
+//			e.getRevisions().add(re);
+//			re.insertDBEntry(1);
+//
+//			re = new RevisionEntry();
+//			cal = Calendar.getInstance();
+//			re.date = cal.getTime();
+//			re.mistakes = 2;
+//			e.getRevisions().add(re);
+//			re.insertDBEntry(1);
 
 			Debug.printDict("init"); //$NON-NLS-1$
 			Debug.printRev("init"); //$NON-NLS-1$

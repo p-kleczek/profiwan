@@ -3,7 +3,6 @@ package pkleczek.profiwan.gui;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -12,6 +11,10 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
@@ -19,7 +22,7 @@ import pkleczek.profiwan.model.PhraseEntry;
 @SuppressWarnings("serial")
 public class DictionaryTable extends JTable {
 
-	private static final DateFormat dateOutputFormatter = new SimpleDateFormat(
+	private static final DateTimeFormatter dateOutputFormatter = DateTimeFormat.forPattern(
 			"yyyy-MM-dd"); //$NON-NLS-1$
 
 	private static final int RUS_COLUMN = 0;
@@ -102,12 +105,12 @@ public class DictionaryTable extends JTable {
 		String isInRevisionStr = pe.isInRevisions() ? "y" : ""; //$NON-NLS-1$ //$NON-NLS-2$
 		dtm.addRow(new Object[] { pe.getRusText(), pe.getPlText(),
 				pe.getLabel(), isInRevisionStr,
-				dateOutputFormatter.format(pe.getCreationDate()) });
+				dateOutputFormatter.print(pe.getCreationDate()) });
 	}
 
 	public void addRow() {
 		PhraseEntry entry = new PhraseEntry();
-		entry.setCreationDate(Calendar.getInstance().getTime());
+		entry.setCreationDate(DateTime.now());
 
 		addRowToDTM(entry);
 

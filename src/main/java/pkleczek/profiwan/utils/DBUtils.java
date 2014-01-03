@@ -7,12 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
+import org.joda.time.DateTime;
 import org.sqlite.SQLiteConfig;
 
 import pkleczek.Messages;
@@ -31,6 +31,7 @@ public class DBUtils {
 	private static PreparedStatement selectRevisionEntry = null;
 	public static PreparedStatement insertRevisionEntry = null;
 	public static PreparedStatement updateRevisionEntry = null;
+	public static PreparedStatement updateRevisionEntryId = null;
 
 	public static final String prodDb = "jdbc:sqlite:profiwan.db";
 	public static final String debugDb = "jdbc:sqlite:profiwan_debug.db";
@@ -67,6 +68,8 @@ public class DBUtils {
 
 		String updateRevisionEntryQuery = "UPDATE Revision SET mistakes = ? WHERE Phrase_idPhrase = ? AND date(revDate, 'unixepoch') = date('now');";
 
+		String updateRevisionEntryIdQuery = "UPDATE Revision SET mistakes = ? WHERE idRevision = ?;";
+
 		try {
 			insertPhraseEntry = getConnection().prepareStatement(
 					insertPhraseEntryQuery, Statement.RETURN_GENERATED_KEYS);
@@ -85,6 +88,9 @@ public class DBUtils {
 
 			updateRevisionEntry = getConnection().prepareStatement(
 					updateRevisionEntryQuery);
+
+			updateRevisionEntryId = getConnection().prepareStatement(
+					updateRevisionEntryIdQuery);
 		} catch (SQLException e) {
 			JOptionPane
 					.showMessageDialog(
@@ -121,7 +127,7 @@ public class DBUtils {
 				String lang1 = rs.getString("lang1");
 				String lang2 = rs.getString("lang2");
 				boolean inRevision = rs.getBoolean("inRevision");
-				Date date = new Date((long) rs.getInt("createdOn")*1000L);
+				DateTime date = new DateTime((long) rs.getInt("createdOn")*1000L);
 				String label = rs.getString("label");
 
 				PhraseEntry entry = new PhraseEntry();
@@ -142,7 +148,7 @@ public class DBUtils {
 
 				while (rs.next()) {
 					RevisionEntry re = new RevisionEntry();
-					re.date = new Date((long) rs.getInt("revDate")*1000L);
+					re.date = new DateTime((long) rs.getInt("revDate")*1000L);
 					re.mistakes = rs.getInt("mistakes");
 
 					entry.getRevisions().add(re);

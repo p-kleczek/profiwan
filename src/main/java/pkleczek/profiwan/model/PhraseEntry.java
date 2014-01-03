@@ -4,10 +4,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
+import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.utils.DBExecutable;
 import pkleczek.profiwan.utils.DBUtils;
 
@@ -28,7 +29,7 @@ public class PhraseEntry implements DBExecutable {
 	/**
 	 * Minimum number of days between two consecutive revisions.
 	 */
-	public static int MIN_REVISION_INTERVAL = 2;
+	public static int MIN_REVISION_INTERVAL = 1;
 
 	/**
 	 * Numbers of initial consecutive correct revisions before its frequency
@@ -55,45 +56,82 @@ public class PhraseEntry implements DBExecutable {
 	 */
 	public static class RevisionEntry {
 
-		public Date date;
+		public Integer id = null;
+
+		public DateTime date = null;
 
 		/**
 		 * How many times a mistake was made during the given revision.
 		 */
-		public Integer mistakes;
+		public int mistakes;
+
+		public boolean isToContinue() {
+			return (date.isAfter(DateTime.now().withTimeAtStartOfDay()) && mistakes < 0);
+		}
 
 		public void insertDBEntry(int revisionEntryId) throws SQLException {
 
 			PreparedStatement stmt = DBUtils.insertRevisionEntry;
 
-			stmt.setInt(1, (int) (date.getTime()/1000));
+			stmt.setInt(1, (int) (date.getMillis() / 1000));
 			stmt.setInt(2, mistakes);
 			stmt.setInt(3, revisionEntryId);
 			stmt.executeUpdate();
+
+			ResultSet generatedKeys = null;
+			try {
+				generatedKeys = stmt.getGeneratedKeys();
+				if (generatedKeys.next()) {
+					id = generatedKeys.getInt(1);
+				} else {
+					throw new SQLException(
+							"PhraseEntry: no generated key obtained."); //$NON-NLS-1$
+				}
+			} finally {
+				if (generatedKeys != null)
+					try {
+						generatedKeys.close();
+					} catch (SQLException logOrIgnore) {
+					}
+			}
+
+			Debug.printDict("insert RE");
 		}
-		
-		public static void updateDBEntry(int revisionEntryId, int mistakes) throws SQLException {
+
+		public static void updateDBEntry(int revisionEntryId, int mistakes)
+				throws SQLException {
 
 			PreparedStatement stmt = DBUtils.updateRevisionEntry;
 
 			stmt.setInt(1, mistakes);
 			stmt.setInt(2, revisionEntryId);
 			stmt.executeUpdate();
-		}		
+		}
+
+		public void updateDBEntry() throws SQLException {
+
+			PreparedStatement stmt = DBUtils.updateRevisionEntryId;
+
+			stmt.setInt(1, mistakes);
+			stmt.setInt(2, id);
+			stmt.executeUpdate();
+
+			Debug.printDict("update RE");
+		}
 	}
 
 	private int id;
 
 	private String plText = ""; //$NON-NLS-1$
 	private String rusText = ""; //$NON-NLS-1$
-	private Date creationDate = null;
+	private DateTime creationDate = null;
 	private String label = ""; //$NON-NLS-1$
 
-	public Date getCreationDate() {
+	public DateTime getCreationDate() {
 		return creationDate;
 	}
 
-	public void setCreationDate(Date creationDate) {
+	public void setCreationDate(DateTime creationDate) {
 		this.creationDate = creationDate;
 	}
 
@@ -145,16 +183,25 @@ public class PhraseEntry implements DBExecutable {
 	}
 
 	public boolean isReviseNow() {
+
+		if (!isInRevisions()) {
+			return false;
+		}
+
+		if (revisions.isEmpty()) {
+			return true;
+		}
+
+		RevisionEntry lastRevision = revisions.get(revisions.size() - 1);
+		if (lastRevision.isToContinue()) {
+			return true;
+		}
+
 		int freq = getRevisionFrequency();
-
-		Calendar calendar = Calendar.getInstance();
-		Date lastRevisionDate = revisions.get(revisions.size() - 1).date;
-		calendar.setTime(lastRevisionDate);
-		calendar.add(Calendar.DATE, freq);
-		Date nextRevisionDate = calendar.getTime();
-		Date today = Calendar.getInstance().getTime();
-
-		return today.after(nextRevisionDate);
+		DateTime nextRevisionDate = lastRevision.date.plusDays(freq).withTimeAtStartOfDay();
+		DateTime todayMidnight = DateTime.now().withTimeAtStartOfDay();
+		
+		return !nextRevisionDate.isAfter(todayMidnight);
 	}
 
 	public int getRevisionFrequency() {
@@ -210,7 +257,7 @@ public class PhraseEntry implements DBExecutable {
 		stmt.setString(1, getRusText());
 		stmt.setString(2, getPlText());
 		stmt.setInt(3, ir);
-		stmt.setInt(4, (int) (getCreationDate().getTime()/1000));
+		stmt.setInt(4, (int) (getCreationDate().getMillis() / 1000));
 		stmt.setString(5, getLabel());
 
 		stmt.executeUpdate();

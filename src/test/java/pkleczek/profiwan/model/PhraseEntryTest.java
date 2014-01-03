@@ -19,7 +19,7 @@ public class PhraseEntryTest {
 		re = new RevisionEntry();
 		cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-		re.date = cal.getTime();
+//		re.date = cal.getTime();
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
@@ -35,7 +35,7 @@ public class PhraseEntryTest {
 		re = new RevisionEntry();
 		cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -PhraseEntry.FREQUENCY_DECAY);
-		re.date = cal.getTime();
+//		re.date = cal.getTime();
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
@@ -52,7 +52,7 @@ public class PhraseEntryTest {
 			re = new RevisionEntry();
 			cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-			re.date = cal.getTime();
+//			re.date = cal.getTime();
 			re.mistakes = 0;
 			pe.getRevisions().add(re);
 		}
@@ -71,7 +71,7 @@ public class PhraseEntryTest {
 			re = new RevisionEntry();
 			cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-			re.date = cal.getTime();
+//			re.date = cal.getTime();
 			re.mistakes = 0;
 			pe.getRevisions().add(re);
 		}
@@ -90,7 +90,7 @@ public class PhraseEntryTest {
 			re = new RevisionEntry();
 			cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-			re.date = cal.getTime();
+//			re.date = cal.getTime();
 			re.mistakes = 0;
 			pe.getRevisions().add(re);
 		}
@@ -98,7 +98,7 @@ public class PhraseEntryTest {
 		re = new RevisionEntry();
 		cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-		re.date = cal.getTime();
+//		re.date = cal.getTime();
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
@@ -116,7 +116,7 @@ public class PhraseEntryTest {
 			re = new RevisionEntry();
 			cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-			re.date = cal.getTime();
+//			re.date = cal.getTime();
 			re.mistakes = 0;
 			pe.getRevisions().add(re);
 		}
@@ -124,7 +124,7 @@ public class PhraseEntryTest {
 		re = new RevisionEntry();
 		cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -PhraseEntry.MIN_CORRECT_STREAK);
-		re.date = cal.getTime();
+//		re.date = cal.getTime();
 		re.mistakes = 1;
 		pe.getRevisions().add(re);
 
