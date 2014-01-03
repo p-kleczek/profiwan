@@ -7,12 +7,67 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class Debug {
+	
+	// for tests
+	public static void prepareDB() {
+
+		try {
+			DBUtils.recreateTables();
+
+			PhraseEntry e = new PhraseEntry();
+			e.setRusText("x"); //$NON-NLS-1$
+			e.setPlText("y"); //$NON-NLS-1$
+			e.setCreationDate(DateTime.now());
+			e.setLabel("rand"); //$NON-NLS-1$
+			e.setInRevisions(true);
+			e.insertDBEntry();
+
+			e.setRusText("x"); //$NON-NLS-1$
+			e.updateDBEntry();
+
+			RevisionEntry re = null;
+
+			re = new RevisionEntry();
+			re.date = new DateTime(2013, 12, 5, 10, 15, 8);
+			re.mistakes = 3;
+			e.getRevisions().add(re);
+			re.insertDBEntry(1);
+
+			re = new RevisionEntry();
+			re.date = new DateTime(2014, 1, 2, 10, 15, 8);
+			re.mistakes = 2;
+			e.getRevisions().add(re);
+			re.insertDBEntry(1);
+//
+//			re = new RevisionEntry();
+//			cal.set(2013, 12, 15);
+//			re.date = cal.getTime();
+//			re.mistakes = 2;
+//			e.getRevisions().add(re);
+//			re.insertDBEntry(1);
+//
+//			re = new RevisionEntry();
+//			cal = Calendar.getInstance();
+//			re.date = cal.getTime();
+//			re.mistakes = 2;
+//			e.getRevisions().add(re);
+//			re.insertDBEntry(1);
+
+			Debug.printDict("init"); //$NON-NLS-1$
+			Debug.printRev("init"); //$NON-NLS-1$
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void printDict(String operation) {
 		List<PhraseEntry> dict;
 		try {

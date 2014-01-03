@@ -26,6 +26,7 @@ public class MainFrame extends JFrame {
 	 * Create the frame.
 	 */
 	public MainFrame() {
+		setTitle("ProfIwan"); //$NON-NLS-1$
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -74,7 +75,6 @@ public class MainFrame extends JFrame {
 		contentPane.add(btnRevisions);
 		
 		pack();
-		setTitle("ProfIwan"); //$NON-NLS-1$
 	}
 
 }

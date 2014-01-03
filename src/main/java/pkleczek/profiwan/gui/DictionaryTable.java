@@ -1,8 +1,6 @@
 package pkleczek.profiwan.gui;
 
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -18,6 +16,7 @@ import org.joda.time.format.DateTimeFormatter;
 import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
+import pkleczek.profiwan.utils.TextUtils;
 
 @SuppressWarnings("serial")
 public class DictionaryTable extends JTable {
@@ -29,8 +28,6 @@ public class DictionaryTable extends JTable {
 	private static final int PL_COLUMN = 1;
 	private static final int LABEL_COLUMN = 2;
 	private static final int REV_COLUMN = 3;
-
-	public static final CharSequence ACCENT_MARKER = "\\"; //$NON-NLS-1$
 
 	private static String[] columnNames = {
 			"RUS", "PL", Messages.getString("DictionaryTable.label"), Messages.getString("DictionaryTable.isRevised"), Messages.getString("DictionaryTable.created") }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
@@ -63,9 +60,8 @@ public class DictionaryTable extends JTable {
 
 					String val = (String) dtm.getValueAt(row, col);
 
-					if (val.contains(ACCENT_MARKER)) {
-						val = val.replace(ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
-						dtm.setValueAt(val, row, col);
+					if (val.contains(TextUtils.CUSTOM_ACCENT_MARKER)) {
+						dtm.setValueAt(TextUtils.getAccentedString(val), row, col);
 					}
 
 					instance.dictionary.get(row).setRusText(val);

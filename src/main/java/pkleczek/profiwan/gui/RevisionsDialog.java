@@ -28,6 +28,7 @@ import pkleczek.Messages;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.TextUtils;
 
 @SuppressWarnings("serial")
 public class RevisionsDialog extends JDialog {
@@ -240,7 +241,7 @@ public class RevisionsDialog extends JDialog {
 	                    null,
 	                    currentRevision.getRusText());
 				
-				s = s.replace(DictionaryTable.ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
+				s = s.replace(TextUtils.CUSTOM_ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
 				
 				currentRevision.setRusText(s);
 				

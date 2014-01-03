@@ -98,15 +98,15 @@ public class PhraseEntry implements DBExecutable {
 			Debug.printDict("insert RE");
 		}
 
-		public static void updateDBEntry(int revisionEntryId, int mistakes)
-				throws SQLException {
-
-			PreparedStatement stmt = DBUtils.updateRevisionEntry;
-
-			stmt.setInt(1, mistakes);
-			stmt.setInt(2, revisionEntryId);
-			stmt.executeUpdate();
-		}
+//		public static void updateDBEntry(int revisionEntryId, int mistakes)
+//				throws SQLException {
+//
+//			PreparedStatement stmt = DBUtils.updateRevisionEntry;
+//
+//			stmt.setInt(1, mistakes);
+//			stmt.setInt(2, revisionEntryId);
+//			stmt.executeUpdate();
+//		}
 
 		public void updateDBEntry() throws SQLException {
 

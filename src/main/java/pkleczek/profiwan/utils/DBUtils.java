@@ -30,7 +30,7 @@ public class DBUtils {
 	public static PreparedStatement deletePhraseEntry = null;
 	private static PreparedStatement selectRevisionEntry = null;
 	public static PreparedStatement insertRevisionEntry = null;
-	public static PreparedStatement updateRevisionEntry = null;
+//	public static PreparedStatement updateRevisionEntry = null;
 	public static PreparedStatement updateRevisionEntryId = null;
 
 	public static final String prodDb = "jdbc:sqlite:profiwan.db";
@@ -66,7 +66,7 @@ public class DBUtils {
 		String insertRevisionEntryQuery = "INSERT INTO Revision (idRevision,revDate,mistakes,Phrase_idPhrase) "
 				+ "VALUES (NULL, ?, ?, ?) ;";
 
-		String updateRevisionEntryQuery = "UPDATE Revision SET mistakes = ? WHERE Phrase_idPhrase = ? AND date(revDate, 'unixepoch') = date('now');";
+//		String updateRevisionEntryQuery = "UPDATE Revision SET mistakes = ? WHERE Phrase_idPhrase = ? AND date(revDate, 'unixepoch') = date('now');";
 
 		String updateRevisionEntryIdQuery = "UPDATE Revision SET mistakes = ? WHERE idRevision = ?;";
 
@@ -86,8 +86,8 @@ public class DBUtils {
 			insertRevisionEntry = getConnection().prepareStatement(
 					insertRevisionEntryQuery);
 
-			updateRevisionEntry = getConnection().prepareStatement(
-					updateRevisionEntryQuery);
+//			updateRevisionEntry = getConnection().prepareStatement(
+//					updateRevisionEntryQuery);
 
 			updateRevisionEntryId = getConnection().prepareStatement(
 					updateRevisionEntryIdQuery);
@@ -224,5 +224,13 @@ public class DBUtils {
 				}
 			}
 		}
+	}
+	
+	public static int getIntFromDateTime(DateTime dt) {
+		return (int) (dt.getMillis() / 1000);
+	}
+
+	public static DateTime getDateTimeFromInt(int i) {
+		return new DateTime((long) i*1000L);
 	}
 }
