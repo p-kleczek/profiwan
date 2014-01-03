@@ -49,14 +49,16 @@ public class RevisionsDialog extends JDialog {
 
 	private List<PhraseEntry> dictionary;
 	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>(); // poprawki
-	private Map<Integer, RevisionEntry> revisionMistakes = new HashMap<Integer, RevisionEntry>(); 
+	private Map<Integer, RevisionEntry> revisionEntries = new HashMap<Integer, RevisionEntry>(); 
 	// w kolejce
 	private ListIterator<PhraseEntry> revIterator = null;
 	PhraseEntry currentRevision = null;
 
 	private boolean enteredCorrectly = false;
-	private int initialNumberOfRevisions = 0;
-
+	private int nWords = 0;
+	private int nCorrectWords = 0;
+	private int nRevisions = 1; 
+	
 	private JButton btnEdit;
 
 	private JButton btnAccept;
@@ -67,20 +69,10 @@ public class RevisionsDialog extends JDialog {
 				continue;
 			}
 			
-//			if (!pe.getRevisions().isEmpty()) {
-//				RevisionEntry re = pe.getRevisions().get(
-//						pe.getRevisions().size() - 1);
-//
-//				// TODO: kryterium oceny
-//				if (!(re.mistakes > 1))
-//					break;
-//			}
-
 			pendingRevisions.add(pe);
 			
 			RevisionEntry currentRevision = new RevisionEntry();
 			
-			// FIXME: odczyt z bd (jesli istnieje wpis z danego dnia), np. -n = bledy, ale jeszcze niezaliczone
 			List<RevisionEntry> revisions = pe.getRevisions();
 			if (!revisions.isEmpty()) {
 				RevisionEntry re = revisions.get(revisions.size()-1);
@@ -94,7 +86,7 @@ public class RevisionsDialog extends JDialog {
 				currentRevision.date = DateTime.now();
 			}
 				
-			revisionMistakes.put(pe.getId(), currentRevision);
+			revisionEntries.put(pe.getId(), currentRevision);
 		}
 
 		if (pendingRevisions.isEmpty()) {
@@ -102,8 +94,8 @@ public class RevisionsDialog extends JDialog {
 			lblStats.setText("-"); //$NON-NLS-1$
 		} else {
 			lblPolish.setText(pendingRevisions.getFirst().getPlText());
-			initialNumberOfRevisions = pendingRevisions.size();
-			lblStats.setText("0 / " + initialNumberOfRevisions); //$NON-NLS-1$
+			nWords = pendingRevisions.size();
+			lblStats.setText("0 / " + nWords); //$NON-NLS-1$
 			revIterator = pendingRevisions.listIterator();
 		}
 	}
@@ -165,8 +157,7 @@ public class RevisionsDialog extends JDialog {
 							textField.getText());
 					
 					
-					// TODO: wprowadzenie powtorki
-					RevisionEntry re = revisionMistakes.get(currentRevision.getId());
+					RevisionEntry re = revisionEntries.get(currentRevision.getId());
 					if (re.mistakes == 0) {
 						try {
 							re.insertDBEntry(currentRevision.getId());
@@ -184,9 +175,9 @@ public class RevisionsDialog extends JDialog {
 						confirmRevision(currentRevision);
 
 						lblCorrect.setText(Messages.getString("ok")); //$NON-NLS-1$
-						lblStats.setText(initialNumberOfRevisions
+						lblStats.setText(nWords
 								- pendingRevisions.size() + " / " //$NON-NLS-1$
-								+ initialNumberOfRevisions);
+								+ nWords);
 					} else {
 						// incorrect
 						lblCorrect.setText(Messages.getString("RevisionsDialog.correct") + currentRevision.getRusText()); //$NON-NLS-1$
@@ -195,11 +186,8 @@ public class RevisionsDialog extends JDialog {
 						btnAccept.setEnabled(true);
 						
 						re.mistakes--;
-//						int previousMistakes = revisionMistakes.get(currentRevision.getId());
-//						revisionMistakes.put(currentRevision.getId(), previousMistakes - 1);
 					}
 
-					// TODO: uaktualnij RE w bd
 					try {
 						re.updateDBEntry();
 					} catch (SQLException e1) {
@@ -224,7 +212,7 @@ public class RevisionsDialog extends JDialog {
 		JButton btnStop = new JButton(Messages.getString("RevisionsDialog.stop")); //$NON-NLS-1$
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				dispose();
+				finishRevisions();
 			}
 		});
 		GridBagConstraints gbc_btnStop = new GridBagConstraints();
@@ -303,7 +291,8 @@ public class RevisionsDialog extends JDialog {
 		RevisionEntry re = new RevisionEntry();
 		pe.getRevisions().add(re);
 		revIterator.remove();
-		revisionMistakes.remove(pe.getId());
+		revisionEntries.remove(pe.getId());
+		nCorrectWords++;
 	}
 	
 	private void nextWord() {
@@ -311,8 +300,7 @@ public class RevisionsDialog extends JDialog {
 		btnAccept.setEnabled(false);
 		
 		if (pendingRevisions.isEmpty()) {
-			// TODO: statystyki sesji
-			dispose();
+			finishRevisions();
 		} else {
 			if (!revIterator.hasNext()) {
 				revIterator = pendingRevisions.listIterator();
@@ -328,10 +316,18 @@ public class RevisionsDialog extends JDialog {
 			lblCorrect.setForeground(Color.BLACK);
 		}
 
+		nRevisions++;
 		state = State.USER_INPUT;
 	}
 	
 	public boolean hasRevisions() {
 		return !pendingRevisions.isEmpty();
+	}
+	
+	public void finishRevisions() {
+		String msg = String.format("Statistics:\n   words                  = %d\n   correct words   = %d\n   total revisions   = %d", nWords, nCorrectWords, nRevisions);
+
+		JOptionPane.showMessageDialog(this, msg);
+		dispose();
 	}
 }
