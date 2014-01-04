@@ -48,6 +48,12 @@ public class PhraseEntry implements DBExecutable {
 	private static double MISTAKE_MULTIPLIER = 0.5;
 
 	/**
+	 * Makes revision frequency vary +/- n% from its initial value to prevent
+	 * the stacking effect of revisions made on the same day.
+	 */
+	private static double COUNTER_STACKING_FACTOR = 0.1;
+
+	/**
 	 * The <code>RevisionEntry</code> class stores all information about a
 	 * revision relevant for generation of further revisions.
 	 * 
@@ -98,15 +104,15 @@ public class PhraseEntry implements DBExecutable {
 			Debug.printDict("insert RE");
 		}
 
-//		public static void updateDBEntry(int revisionEntryId, int mistakes)
-//				throws SQLException {
-//
-//			PreparedStatement stmt = DBUtils.updateRevisionEntry;
-//
-//			stmt.setInt(1, mistakes);
-//			stmt.setInt(2, revisionEntryId);
-//			stmt.executeUpdate();
-//		}
+		// public static void updateDBEntry(int revisionEntryId, int mistakes)
+		// throws SQLException {
+		//
+		// PreparedStatement stmt = DBUtils.updateRevisionEntry;
+		//
+		// stmt.setInt(1, mistakes);
+		// stmt.setInt(2, revisionEntryId);
+		// stmt.executeUpdate();
+		// }
 
 		public void updateDBEntry() throws SQLException {
 
@@ -198,9 +204,18 @@ public class PhraseEntry implements DBExecutable {
 		}
 
 		int freq = getRevisionFrequency();
-		DateTime nextRevisionDate = lastRevision.date.plusDays(freq).withTimeAtStartOfDay();
+
+		// Modify frequency to prevent stacking of revisions made on the same
+		// day.
+		freq *= (1.0 - COUNTER_STACKING_FACTOR) + Math.random()
+				* (COUNTER_STACKING_FACTOR / 2.0);
+		freq = Math.max(freq, MIN_REVISION_INTERVAL);
+		freq = Math.min(freq, MAX_REVISION_INTERVAL);
+
+		DateTime nextRevisionDate = lastRevision.date.plusDays(freq)
+				.withTimeAtStartOfDay();
 		DateTime todayMidnight = DateTime.now().withTimeAtStartOfDay();
-		
+
 		return !nextRevisionDate.isAfter(todayMidnight);
 	}
 

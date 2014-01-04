@@ -55,6 +55,7 @@ public class ProfIwan {
 					new ProfIwan();
 				} catch (Exception e) {
 					logger.severe(e.toString());
+					e.printStackTrace();
 				}
 			}
 		});

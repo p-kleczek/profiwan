@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,8 +37,8 @@ public class RevisionsDialog extends JDialog {
 	enum State {
 		USER_INPUT, ANSWER
 	}
-	
-	private final RevisionsDialog instance = this; 
+
+	private final RevisionsDialog instance = this;
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	private State state = State.USER_INPUT;
@@ -50,7 +51,7 @@ public class RevisionsDialog extends JDialog {
 
 	private List<PhraseEntry> dictionary;
 	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>(); // poprawki
-	private Map<Integer, RevisionEntry> revisionEntries = new HashMap<Integer, RevisionEntry>(); 
+	private Map<Integer, RevisionEntry> revisionEntries = new HashMap<Integer, RevisionEntry>();
 	// w kolejce
 	private ListIterator<PhraseEntry> revIterator = null;
 	PhraseEntry currentRevision = null;
@@ -58,8 +59,8 @@ public class RevisionsDialog extends JDialog {
 	private boolean enteredCorrectly = false;
 	private int nWords = 0;
 	private int nCorrectWords = 0;
-	private int nRevisions = 1; 
-	
+	private int nRevisions = 1;
+
 	private JButton btnEdit;
 
 	private JButton btnAccept;
@@ -69,26 +70,28 @@ public class RevisionsDialog extends JDialog {
 			if (!pe.isReviseNow()) {
 				continue;
 			}
-			
+
 			pendingRevisions.add(pe);
-			
+
 			RevisionEntry currentRevision = new RevisionEntry();
-			
+
 			List<RevisionEntry> revisions = pe.getRevisions();
 			if (!revisions.isEmpty()) {
-				RevisionEntry re = revisions.get(revisions.size()-1);
-				
+				RevisionEntry re = revisions.get(revisions.size() - 1);
+
 				if (re.isToContinue()) {
 					currentRevision = re;
 				}
 			}
-			
+
 			if (currentRevision.id == null) {
 				currentRevision.date = DateTime.now();
 			}
-				
+
 			revisionEntries.put(pe.getId(), currentRevision);
 		}
+
+		Collections.shuffle(pendingRevisions);
 
 		if (pendingRevisions.isEmpty()) {
 			lblPolish.setText(""); //$NON-NLS-1$
@@ -108,7 +111,7 @@ public class RevisionsDialog extends JDialog {
 		dictionary = DBUtils.getDictionary();
 
 		prepareRevisions();
-		
+
 		setTitle(Messages.getString("RevisionsDialog.revisions")); //$NON-NLS-1$
 		setModal(true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -119,9 +122,15 @@ public class RevisionsDialog extends JDialog {
 		GridBagLayout gbl_contentPane = new GridBagLayout();
 		gbl_contentPane.columnWidths = new int[] { 178, 86, 0 };
 		gbl_contentPane.rowHeights = new int[] { 39, 0, 0, 0, 0 };
-		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0,
+		gbl_contentPane.columnWeights = new double[] {
+				0.0,
+				0.0,
 				Double.MIN_VALUE };
-		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0,
+		gbl_contentPane.rowWeights = new double[] {
+				0.0,
+				0.0,
+				0.0,
+				0.0,
 				Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
@@ -156,9 +165,9 @@ public class RevisionsDialog extends JDialog {
 
 					enteredCorrectly = currentRevision.getRusText().equals(
 							textField.getText());
-					
-					
-					RevisionEntry re = revisionEntries.get(currentRevision.getId());
+
+					RevisionEntry re = revisionEntries.get(currentRevision
+							.getId());
 					if (re.mistakes == 0) {
 						try {
 							re.insertDBEntry(currentRevision.getId());
@@ -168,24 +177,25 @@ public class RevisionsDialog extends JDialog {
 							e1.printStackTrace();
 						}
 					}
-					
+
 					if (enteredCorrectly) {
 						// correct
-						
+
 						re.mistakes = -re.mistakes;
 						confirmRevision(currentRevision);
 
 						lblCorrect.setText(Messages.getString("ok")); //$NON-NLS-1$
-						lblStats.setText(nWords
-								- pendingRevisions.size() + " / " //$NON-NLS-1$
+						lblStats.setText(nWords - pendingRevisions.size()
+								+ " / " //$NON-NLS-1$
 								+ nWords);
 					} else {
 						// incorrect
-						lblCorrect.setText(Messages.getString("RevisionsDialog.correct") + currentRevision.getRusText()); //$NON-NLS-1$
+						lblCorrect.setText(Messages
+								.getString("RevisionsDialog.correct") + currentRevision.getRusText()); //$NON-NLS-1$
 						lblCorrect.setForeground(Color.red);
 						btnEdit.setEnabled(true);
 						btnAccept.setEnabled(true);
-						
+
 						re.mistakes--;
 					}
 
@@ -195,7 +205,7 @@ public class RevisionsDialog extends JDialog {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
+
 					state = State.ANSWER;
 				} else {
 					// answer
@@ -210,7 +220,8 @@ public class RevisionsDialog extends JDialog {
 		gbc_textField.gridy = 1;
 		panel.add(textField, gbc_textField);
 
-		JButton btnStop = new JButton(Messages.getString("RevisionsDialog.stop")); //$NON-NLS-1$
+		JButton btnStop = new JButton(
+				Messages.getString("RevisionsDialog.stop")); //$NON-NLS-1$
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				finishRevisions();
@@ -232,19 +243,17 @@ public class RevisionsDialog extends JDialog {
 		btnEdit = new JButton(Messages.getString("RevisionsDialog.edit")); //$NON-NLS-1$
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String s = (String)JOptionPane.showInputDialog(
-	                    instance,
-	                    Messages.getString("RevisionsDialog.newVersion"), //$NON-NLS-1$
-	                    Messages.getString("RevisionsDialog.editWord"), //$NON-NLS-1$
-	                    JOptionPane.PLAIN_MESSAGE,
-	                    null,
-	                    null,
-	                    currentRevision.getRusText());
-				
+				String s = (String) JOptionPane.showInputDialog(
+						instance,
+						Messages.getString("RevisionsDialog.newVersion"), //$NON-NLS-1$
+						Messages.getString("RevisionsDialog.editWord"), //$NON-NLS-1$
+						JOptionPane.PLAIN_MESSAGE, null, null,
+						currentRevision.getRusText());
+
 				s = s.replace(TextUtils.CUSTOM_ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
-				
+
 				currentRevision.setRusText(s);
-				
+
 				try {
 					currentRevision.updateDBEntry();
 				} catch (SQLException e1) {
@@ -253,7 +262,7 @@ public class RevisionsDialog extends JDialog {
 							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 					logger.severe(e.toString());
 				}
-				
+
 				textField.requestFocus();
 			}
 		});
@@ -284,7 +293,7 @@ public class RevisionsDialog extends JDialog {
 		gbc_lblCorrect.gridx = 1;
 		gbc_lblCorrect.gridy = 3;
 		contentPane.add(lblStats, gbc_lblCorrect);
-		
+
 		pack();
 	}
 
@@ -295,11 +304,11 @@ public class RevisionsDialog extends JDialog {
 		revisionEntries.remove(pe.getId());
 		nCorrectWords++;
 	}
-	
+
 	private void nextWord() {
 		btnEdit.setEnabled(false);
 		btnAccept.setEnabled(false);
-		
+
 		if (pendingRevisions.isEmpty()) {
 			finishRevisions();
 		} else {
@@ -320,13 +329,15 @@ public class RevisionsDialog extends JDialog {
 		nRevisions++;
 		state = State.USER_INPUT;
 	}
-	
+
 	public boolean hasRevisions() {
 		return !pendingRevisions.isEmpty();
 	}
-	
+
 	public void finishRevisions() {
-		String msg = String.format("Statistics:\n   words                  = %d\n   correct words   = %d\n   total revisions   = %d", nWords, nCorrectWords, nRevisions);
+		String msg = String
+				.format("Statistics:\n   words                  = %d\n   correct words   = %d\n   total revisions   = %d",
+						nWords, nCorrectWords, nRevisions);
 
 		JOptionPane.showMessageDialog(this, msg);
 		dispose();

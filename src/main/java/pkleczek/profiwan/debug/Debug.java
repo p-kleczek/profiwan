@@ -20,12 +20,30 @@ public class Debug {
 
 		try {
 			DBUtils.recreateTables();
+			
+			PhraseEntry e = null;
 
-			PhraseEntry e = new PhraseEntry();
-			e.setRusText("x"); //$NON-NLS-1$
-			e.setPlText("y"); //$NON-NLS-1$
+			e = new PhraseEntry();
+			e.setRusText("a");
+			e.setPlText("b");
 			e.setCreationDate(DateTime.now());
-			e.setLabel("rand"); //$NON-NLS-1$
+			e.setLabel("rand");
+			e.setInRevisions(true);
+			e.insertDBEntry();
+			
+			e = new PhraseEntry();
+			e.setRusText("ala");
+			e.setPlText("ma");
+			e.setCreationDate(DateTime.now());
+			e.setLabel("rand");
+			e.setInRevisions(true);
+			e.insertDBEntry();
+			
+			e = new PhraseEntry();
+			e.setRusText("x");
+			e.setPlText("y");
+			e.setCreationDate(DateTime.now());
+			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 
