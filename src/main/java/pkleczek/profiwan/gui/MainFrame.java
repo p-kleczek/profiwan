@@ -14,12 +14,15 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import pkleczek.Messages;
+import pkleczek.profiwan.model.RevisionsSession;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
 
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-	
+
+	private MainFrame instance = this;
+
 	private JPanel contentPane;
 
 	/**
@@ -34,8 +37,9 @@ public class MainFrame extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
-		JButton btnDictionary = new JButton(Messages.getString("MainFrame.dictionary")); //$NON-NLS-1$
+
+		JButton btnDictionary = new JButton(
+				Messages.getString("MainFrame.dictionary")); //$NON-NLS-1$
 		btnDictionary.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JDialog dlg;
@@ -48,32 +52,26 @@ public class MainFrame extends JFrame {
 			}
 		});
 		contentPane.add(btnDictionary);
-		
-		JButton btnRevisions = new JButton(Messages.getString("MainFrame.revisions")); //$NON-NLS-1$
+
+		JButton btnRevisions = new JButton(
+				Messages.getString("MainFrame.revisions")); //$NON-NLS-1$
 		btnRevisions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RevisionsDialog dlg;
-				try {
-					dlg = new RevisionsDialog();
-					if (dlg.hasRevisions()) {
-						dlg.setVisible(true);
-					} else {
-						JOptionPane.showMessageDialog(dlg, Messages.getString("MainFrame.noPendingRevisions")); //$NON-NLS-1$
-						dlg.dispose();
-						return;
-					}
-				} catch (SQLException e1) {
-					JOptionPane.showMessageDialog(
-							null,
-							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-					logger.severe(e1.toString());
+				RevisionsSession revisionSession = new RevisionsSession();
+
+				if (revisionSession.hasRevisions()) {
+					RevisionsDialog dlg = new RevisionsDialog(revisionSession);
+					dlg.setVisible(true);
+				} else {
+					JOptionPane.showMessageDialog(instance,
+							Messages.getString("MainFrame.noPendingRevisions")); //$NON-NLS-1$
+					return;
 				}
-				
-				
+
 			}
 		});
 		contentPane.add(btnRevisions);
-		
+
 		pack();
 	}
 
