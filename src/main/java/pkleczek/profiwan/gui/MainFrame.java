@@ -58,6 +58,7 @@ public class MainFrame extends JFrame {
 		btnRevisions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				RevisionsSession revisionSession = new RevisionsSession();
+				revisionSession.prepareRevisions();
 
 				if (revisionSession.hasRevisions()) {
 					RevisionsDialog dlg = new RevisionsDialog(revisionSession);

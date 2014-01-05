@@ -1,5 +1,10 @@
 package pkleczek.profiwan.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -132,8 +137,8 @@ public class DBUtils {
 
 				PhraseEntry entry = new PhraseEntry();
 				entry.setId(id);
-				entry.setRusText(lang1);
-				entry.setPlText(lang2);
+				entry.setLangBText(lang1);
+				entry.setLangAText(lang2);
 				entry.setInRevisions(inRevision);
 				entry.setCreationDate(date);
 				entry.setLabel(label);
@@ -232,5 +237,28 @@ public class DBUtils {
 
 	public static DateTime getDateTimeFromInt(int i) {
 		return new DateTime((long) i*1000L);
+	}
+	
+	public static void copyFile(File sourceFile, File destFile) throws IOException {
+	    if(!destFile.exists()) {
+	        destFile.createNewFile();
+	    }
+
+	    FileChannel source = null;
+	    FileChannel destination = null;
+
+	    try {
+	        source = new FileInputStream(sourceFile).getChannel();
+	        destination = new FileOutputStream(destFile).getChannel();
+	        destination.transferFrom(source, 0, source.size());
+	    }
+	    finally {
+	        if(source != null) {
+	            source.close();
+	        }
+	        if(destination != null) {
+	            destination.close();
+	        }
+	    }
 	}
 }

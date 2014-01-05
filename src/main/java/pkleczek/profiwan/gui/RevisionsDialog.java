@@ -155,7 +155,7 @@ public class RevisionsDialog extends JDialog {
 		gbc_lblCorrect.gridy = 3;
 		contentPane.add(lblStats, gbc_lblCorrect);
 
-		lblPolish.setText(revisionSession.getNextWord().getPlText()); // XXX:
+		lblPolish.setText(revisionSession.getNextWord().getLangAText()); // XXX:
 																		// checkme!
 		lblStats.setText("0 / " + revisionSession.getWordsNumber()); //$NON-NLS-1$
 
@@ -178,7 +178,7 @@ public class RevisionsDialog extends JDialog {
 				Messages.getString("RevisionsDialog.newVersion"), //$NON-NLS-1$
 				Messages.getString("RevisionsDialog.editWord"), //$NON-NLS-1$
 				JOptionPane.PLAIN_MESSAGE, null, null,
-				currentRevision.getRusText());
+				currentRevision.getLangBText());
 
 		s = s.replace(TextUtils.CUSTOM_ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
 
@@ -203,7 +203,7 @@ public class RevisionsDialog extends JDialog {
 			} else {
 				// incorrect
 				lblCorrect
-						.setText(Messages.getString("RevisionsDialog.correct") + revisionSession.getCurrentPhrase().getRusText()); //$NON-NLS-1$
+						.setText(Messages.getString("RevisionsDialog.correct") + revisionSession.getCurrentPhrase().getLangBText()); //$NON-NLS-1$
 				lblCorrect.setForeground(Color.red);
 				btnEdit.setEnabled(true);
 				btnAccept.setEnabled(true);
@@ -225,7 +225,7 @@ public class RevisionsDialog extends JDialog {
 		if (!revisionSession.hasRevisions()) {
 			finishRevisions();
 		} else {
-			lblPolish.setText(revisionSession.getNextWord().getPlText());
+			lblPolish.setText(revisionSession.getNextWord().getLangAText());
 
 			textField.setEditable(true);
 			textField.setText(""); //$NON-NLS-1$

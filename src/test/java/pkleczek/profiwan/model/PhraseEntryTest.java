@@ -127,8 +127,8 @@ public class PhraseEntryTest {
 		PhraseEntry pe = new PhraseEntry();
 		DateTime dt = DateTime.now();
 		
-		pe.setPlText("pl");
-		pe.setRusText("rus");
+		pe.setLangAText("pl");
+		pe.setLangBText("rus");
 		pe.setCreationDate(dt);
 		pe.setLabel("lab");
 		
@@ -144,8 +144,8 @@ public class PhraseEntryTest {
 			
 			found = true;
 			
-			assertEquals(pe.getPlText(), ipe.getPlText());
-			assertEquals(pe.getRusText(), ipe.getRusText());
+			assertEquals(pe.getLangAText(), ipe.getLangAText());
+			assertEquals(pe.getLangBText(), ipe.getLangBText());
 			
 			int d1 = DBUtils.getIntFromDateTime(pe.getCreationDate());
 			int d2 = DBUtils.getIntFromDateTime(ipe.getCreationDate());
@@ -162,15 +162,15 @@ public class PhraseEntryTest {
 		PhraseEntry pe = new PhraseEntry();
 		DateTime dt = DateTime.now();
 		
-		pe.setPlText("pl");
-		pe.setRusText("rus");
+		pe.setLangAText("pl");
+		pe.setLangBText("rus");
 		pe.setCreationDate(dt);
 		pe.setLabel("lab");
 		
 		pe.insertDBEntry();
 		
-		pe.setPlText("plX");
-		pe.setRusText("rusX");
+		pe.setLangAText("plX");
+		pe.setLangBText("rusX");
 		pe.setLabel("labX");
 		
 		pe.updateDBEntry();
@@ -185,8 +185,8 @@ public class PhraseEntryTest {
 			
 			found = true;
 			
-			assertEquals(pe.getPlText(), ipe.getPlText());
-			assertEquals(pe.getRusText(), ipe.getRusText());
+			assertEquals(pe.getLangAText(), ipe.getLangAText());
+			assertEquals(pe.getLangBText(), ipe.getLangBText());
 			
 			int d1 = DBUtils.getIntFromDateTime(dt);
 			int d2 = DBUtils.getIntFromDateTime(ipe.getCreationDate());

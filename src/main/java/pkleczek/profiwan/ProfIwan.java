@@ -15,6 +15,8 @@ import pkleczek.profiwan.utils.DBUtils;
 public class ProfIwan {
 
 	private static final String LOG_FILENAME = "log.txt"; //$NON-NLS-1$
+	
+//	private static final String dbPath = "D:\Dropbox\ProfIwan\profiwan_debug.db";
 
 	private JFrame frame;
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -72,6 +74,9 @@ public class ProfIwan {
 			Debug.prepareDB();
 			Debug.printDict("init");
 		}
+		
+		// TODO: transfer z dropboxa
+		
 
 		frame = new MainFrame();
 		frame.setVisible(true);

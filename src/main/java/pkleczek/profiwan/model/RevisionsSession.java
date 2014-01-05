@@ -19,12 +19,19 @@ import pkleczek.profiwan.utils.DBUtils;
 
 public class RevisionsSession {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-	
-	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>(); // poprawki
+
+	/**
+	 * List of pending revisions.
+	 */
+	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>();
+
+	/**
+	 * Maps phrase's ID on a corresponding revision entry.
+	 */
 	private Map<Integer, RevisionEntry> revisionEntries = new HashMap<Integer, RevisionEntry>();
-	// w kolejce
-	private ListIterator<PhraseEntry> revIterator = null;
-	PhraseEntry currentRevision = null;
+
+	private ListIterator<PhraseEntry> pendingRevisionsIterator = null;
+	private PhraseEntry currentRevision = null;
 
 	private boolean enteredCorrectly = false;
 	private int wordsNumber = 0;
@@ -32,10 +39,9 @@ public class RevisionsSession {
 	private int revisionsNumber = 1;
 
 	public RevisionsSession() {
-		prepareRevisions();
 	}
 
-	private void prepareRevisions() {
+	public void prepareRevisions() {
 		List<PhraseEntry> dictionary = null;
 		try {
 			dictionary = DBUtils.getDictionary();
@@ -45,36 +51,32 @@ public class RevisionsSession {
 		}
 
 		for (PhraseEntry pe : dictionary) {
-			if (!pe.isReviseNow()) {
-				continue;
+			if (pe.isReviseNow()) {
+				pendingRevisions.add(pe);
+				revisionEntries.put(pe.getId(), prepareRevisionEntry(pe));
 			}
-
-			pendingRevisions.add(pe);
-
-			RevisionEntry currentRevision = new RevisionEntry();
-
-			List<RevisionEntry> revisions = pe.getRevisions();
-			if (!revisions.isEmpty()) {
-				RevisionEntry re = revisions.get(revisions.size() - 1);
-
-				if (re.isToContinue()) {
-					currentRevision = re;
-				}
-			}
-
-			if (currentRevision.id == null) {
-				currentRevision.date = DateTime.now();
-			}
-
-			revisionEntries.put(pe.getId(), currentRevision);
 		}
 
 		Collections.shuffle(pendingRevisions);
 
-		if (!pendingRevisions.isEmpty()) {
-			wordsNumber = pendingRevisions.size();
-			revIterator = pendingRevisions.listIterator();
+		wordsNumber = pendingRevisions.size();
+		pendingRevisionsIterator = pendingRevisions.listIterator();
+	}
+
+	private RevisionEntry prepareRevisionEntry(PhraseEntry phrase) {
+		RevisionEntry revision = new RevisionEntry();
+		revision.date = DateTime.now();
+
+		List<RevisionEntry> revisions = phrase.getRevisions();
+		if (!revisions.isEmpty()) {
+			RevisionEntry re = revisions.get(revisions.size() - 1);
+
+			if (re.isToContinue()) {
+				revision = re;
+			}
 		}
+
+		return revision;
 	}
 
 	public boolean hasRevisions() {
@@ -82,8 +84,8 @@ public class RevisionsSession {
 	}
 
 	public boolean processTypedWord(String input) {
-		currentRevision = revIterator.next();
-		enteredCorrectly = currentRevision.getRusText().equals(input);
+		currentRevision = pendingRevisionsIterator.next();
+		enteredCorrectly = currentRevision.getLangBText().equals(input);
 
 		RevisionEntry re = revisionEntries.get(currentRevision.getId());
 		if (re.mistakes == 0) {
@@ -120,26 +122,27 @@ public class RevisionsSession {
 	private void confirmRevision(PhraseEntry pe) {
 		RevisionEntry re = new RevisionEntry();
 		pe.getRevisions().add(re);
-		revIterator.remove();
+		pendingRevisionsIterator.remove();
 		revisionEntries.remove(pe.getId());
 		correctWordsNumber++;
 	}
 
 	public void acceptRevision() {
 		if (!enteredCorrectly) {
-			confirmRevision(revIterator.previous());
+			confirmRevision(pendingRevisionsIterator.previous());
 		}
 	}
-	
+
 	public void editPhrase(String newText) {
-		currentRevision.setRusText(newText);
+		currentRevision.setLangBText(newText);
 
 		try {
 			currentRevision.updateDBEntry();
 		} catch (SQLException e1) {
-			JOptionPane.showMessageDialog(
-					null,
-					Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
+			JOptionPane
+					.showMessageDialog(
+							null,
+							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 			logger.severe(e1.toString());
 		}
 	}
@@ -159,20 +162,20 @@ public class RevisionsSession {
 	public int getPendingRevisionsSize() {
 		return pendingRevisions.size();
 	}
-	
+
 	public void nextWord() {
 		if (!hasRevisions()) {
 			return;
 		}
-			
-		if (!revIterator.hasNext()) {
-			revIterator = pendingRevisions.listIterator();
+
+		if (!pendingRevisionsIterator.hasNext()) {
+			pendingRevisionsIterator = pendingRevisions.listIterator();
 		}
 
 		revisionsNumber++;
 	}
-	
+
 	public PhraseEntry getNextWord() {
-		return pendingRevisions.get(revIterator.nextIndex());
+		return pendingRevisions.get(pendingRevisionsIterator.nextIndex());
 	}
 }

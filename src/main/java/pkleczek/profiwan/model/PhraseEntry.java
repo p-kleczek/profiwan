@@ -128,8 +128,8 @@ public class PhraseEntry implements DBExecutable {
 
 	private int id;
 
-	private String plText = ""; //$NON-NLS-1$
-	private String rusText = ""; //$NON-NLS-1$
+	private String langAText = ""; //$NON-NLS-1$
+	private String langBText = ""; //$NON-NLS-1$
 	private DateTime creationDate = null;
 	private String label = ""; //$NON-NLS-1$
 
@@ -156,20 +156,20 @@ public class PhraseEntry implements DBExecutable {
 
 	private List<RevisionEntry> revisions = new ArrayList<>();
 
-	public String getPlText() {
-		return plText;
+	public String getLangAText() {
+		return langAText;
 	}
 
-	public void setPlText(String plText) {
-		this.plText = plText;
+	public void setLangAText(String text) {
+		this.langAText = text;
 	}
 
-	public String getRusText() {
-		return rusText;
+	public String getLangBText() {
+		return langBText;
 	}
 
-	public void setRusText(String rusText) {
-		this.rusText = rusText;
+	public void setLangBText(String text) {
+		this.langBText = text;
 	}
 
 	public List<RevisionEntry> getRevisions() {
@@ -269,8 +269,8 @@ public class PhraseEntry implements DBExecutable {
 
 		int ir = isInRevisions() ? 1 : 0;
 
-		stmt.setString(1, getRusText());
-		stmt.setString(2, getPlText());
+		stmt.setString(1, getLangBText());
+		stmt.setString(2, getLangAText());
 		stmt.setInt(3, ir);
 		stmt.setInt(4, (int) (getCreationDate().getMillis() / 1000));
 		stmt.setString(5, getLabel());
@@ -299,8 +299,8 @@ public class PhraseEntry implements DBExecutable {
 	public void updateDBEntry() throws SQLException {
 		PreparedStatement stmt = DBUtils.updatePhraseEntry;
 
-		stmt.setString(1, getRusText());
-		stmt.setString(2, getPlText());
+		stmt.setString(1, getLangBText());
+		stmt.setString(2, getLangAText());
 		stmt.setBoolean(3, isInRevisions());
 		stmt.setString(4, getLabel());
 		stmt.setInt(5, getId());
@@ -319,7 +319,7 @@ public class PhraseEntry implements DBExecutable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\' [%s]\n", getId(), //$NON-NLS-1$
-				getRusText(), getPlText(), getCreationDate()));
+				getLangBText(), getLangAText(), getCreationDate()));
 
 		for (RevisionEntry re : revisions) {
 			sb.append(String.format("\t%s [%d]\n", re.date.toString(), //$NON-NLS-1$

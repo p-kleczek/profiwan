@@ -64,11 +64,11 @@ public class DictionaryTable extends JTable {
 						dtm.setValueAt(TextUtils.getAccentedString(val), row, col);
 					}
 
-					instance.dictionary.get(row).setRusText(val);
+					instance.dictionary.get(row).setLangBText(val);
 				}
 				if (col == PL_COLUMN) {
 					String cellValue = (String) dtm.getValueAt(row, col);
-					instance.dictionary.get(row).setPlText(cellValue);
+					instance.dictionary.get(row).setLangAText(cellValue);
 				}
 				if (col == REV_COLUMN) {
 					String cellValue = (String) dtm.getValueAt(row, col);
@@ -99,7 +99,7 @@ public class DictionaryTable extends JTable {
 
 	private void addRowToDTM(PhraseEntry pe) {
 		String isInRevisionStr = pe.isInRevisions() ? "y" : ""; //$NON-NLS-1$ //$NON-NLS-2$
-		dtm.addRow(new Object[] { pe.getRusText(), pe.getPlText(),
+		dtm.addRow(new Object[] { pe.getLangBText(), pe.getLangAText(),
 				pe.getLabel(), isInRevisionStr,
 				dateOutputFormatter.print(pe.getCreationDate()) });
 	}

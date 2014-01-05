@@ -24,30 +24,30 @@ public class Debug {
 			PhraseEntry e = null;
 
 			e = new PhraseEntry();
-			e.setRusText("a");
-			e.setPlText("b");
+			e.setLangBText("a");
+			e.setLangAText("b");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 			
 			e = new PhraseEntry();
-			e.setRusText("ala");
-			e.setPlText("ma");
+			e.setLangBText("ala");
+			e.setLangAText("ma");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 			
 			e = new PhraseEntry();
-			e.setRusText("x");
-			e.setPlText("y");
+			e.setLangBText("x");
+			e.setLangAText("y");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 
-			e.setRusText("x"); //$NON-NLS-1$
+			e.setLangBText("x"); //$NON-NLS-1$
 			e.updateDBEntry();
 
 			RevisionEntry re = null;
