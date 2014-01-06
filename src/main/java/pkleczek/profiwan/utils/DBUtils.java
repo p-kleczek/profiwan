@@ -59,10 +59,10 @@ public class DBUtils {
 			System.exit(-1);
 		}
 
-		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1,lang2,inRevision,createdOn,label) "
-				+ "VALUES (NULL, ?, ?, ?, ?, ?);";
+		String insertPhraseEntryQuery = "INSERT INTO Phrase (idPhrase,lang1_text,lang2_text,inRevision,createdOn,label,lang1,lang2) "
+				+ "VALUES (NULL, ?, ?, ?, ?, ?, ?, ?);";
 
-		String updatePhraseEntryQuery = "UPDATE Phrase SET lang1 = ?, lang2 = ?, inRevision = ?, label = ? WHERE idPhrase = ?;";
+		String updatePhraseEntryQuery = "UPDATE Phrase SET lang1_text = ?, lang2_text = ?, inRevision = ?, label = ?, lang1 = ?, lang2 = ? WHERE idPhrase = ?;";
 
 		String deletePhraseEntryQuery = "DELETE FROM Phrase WHERE idPhrase = ?;";
 
@@ -131,14 +131,18 @@ public class DBUtils {
 				int id = rs.getInt("idPhrase");
 				String lang1 = rs.getString("lang1");
 				String lang2 = rs.getString("lang2");
+				String lang1Text = rs.getString("lang1_text");
+				String lang2Text = rs.getString("lang2_text");
 				boolean inRevision = rs.getBoolean("inRevision");
 				DateTime date = new DateTime((long) rs.getInt("createdOn")*1000L);
 				String label = rs.getString("label");
 
 				PhraseEntry entry = new PhraseEntry();
 				entry.setId(id);
-				entry.setLangBText(lang1);
-				entry.setLangAText(lang2);
+				entry.setLangA(lang1);
+				entry.setLangB(lang2);
+				entry.setLangAText(lang1Text);
+				entry.setLangBText(lang2Text);
 				entry.setInRevisions(inRevision);
 				entry.setCreationDate(date);
 				entry.setLabel(label);
@@ -198,6 +202,7 @@ public class DBUtils {
 		String queryPhrase = "CREATE TABLE IF NOT EXISTS Phrase "
 				+ "(idPhrase 		INTEGER PRIMARY KEY	AUTOINCREMENT,"
 				+ " lang1			TEXT	NOT NULL," + " lang2			TEXT	NOT NULL,"
+				+ " lang1_text			TEXT	NOT NULL," + " lang2_text			TEXT	NOT NULL,"
 				+ " createdOn			INTEGER NOT NULL," + " label			TEXT	NOT NULL,"
 				+ " inRevision		BOOLEAN);";
 

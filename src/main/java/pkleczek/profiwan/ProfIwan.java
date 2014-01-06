@@ -22,7 +22,7 @@ public class ProfIwan {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static FileHandler fileTxt;
 
-	public static boolean inDebugMode = true;
+	public static boolean inDebugMode = false;
 
 	{
 		try {

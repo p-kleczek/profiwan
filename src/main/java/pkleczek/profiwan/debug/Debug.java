@@ -24,24 +24,30 @@ public class Debug {
 			PhraseEntry e = null;
 
 			e = new PhraseEntry();
-			e.setLangBText("a");
-			e.setLangAText("b");
+			e.setLangA("pl");
+			e.setLangB("rus");
+			e.setLangAText("a");
+			e.setLangBText("b");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 			
 			e = new PhraseEntry();
-			e.setLangBText("ala");
-			e.setLangAText("ma");
+			e.setLangA("pl");
+			e.setLangB("rus");
+			e.setLangAText("ala");
+			e.setLangBText("ma");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
 			e.insertDBEntry();
 			
 			e = new PhraseEntry();
-			e.setLangBText("x");
-			e.setLangAText("y");
+			e.setLangA("pl");
+			e.setLangB("rus");
+			e.setLangAText("x");
+			e.setLangBText("y");
 			e.setCreationDate(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);

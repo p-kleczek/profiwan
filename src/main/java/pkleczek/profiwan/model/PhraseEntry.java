@@ -128,6 +128,16 @@ public class PhraseEntry implements DBExecutable {
 
 	private int id;
 
+	/**
+	 * ISO code of the first language.
+	 */
+	private String langA = "";
+
+	/**
+	 * ISO code of the second language.
+	 */
+	private String langB = "";
+
 	private String langAText = ""; //$NON-NLS-1$
 	private String langBText = ""; //$NON-NLS-1$
 	private DateTime creationDate = null;
@@ -215,7 +225,7 @@ public class PhraseEntry implements DBExecutable {
 		DateTime nextRevisionDate = lastRevision.date.plusDays(freq)
 				.withTimeAtStartOfDay();
 		DateTime todayMidnight = DateTime.now().withTimeAtStartOfDay();
-
+		
 		return !nextRevisionDate.isAfter(todayMidnight);
 	}
 
@@ -269,11 +279,13 @@ public class PhraseEntry implements DBExecutable {
 
 		int ir = isInRevisions() ? 1 : 0;
 
-		stmt.setString(1, getLangBText());
-		stmt.setString(2, getLangAText());
+		stmt.setString(1, getLangAText());
+		stmt.setString(2, getLangBText());
 		stmt.setInt(3, ir);
 		stmt.setInt(4, (int) (getCreationDate().getMillis() / 1000));
 		stmt.setString(5, getLabel());
+		stmt.setString(6, getLangA());
+		stmt.setString(7, getLangB());
 
 		stmt.executeUpdate();
 
@@ -299,11 +311,13 @@ public class PhraseEntry implements DBExecutable {
 	public void updateDBEntry() throws SQLException {
 		PreparedStatement stmt = DBUtils.updatePhraseEntry;
 
-		stmt.setString(1, getLangBText());
-		stmt.setString(2, getLangAText());
+		stmt.setString(1, getLangAText());
+		stmt.setString(2, getLangBText());
 		stmt.setBoolean(3, isInRevisions());
 		stmt.setString(4, getLabel());
 		stmt.setInt(5, getId());
+		stmt.setString(6, getLangA());
+		stmt.setString(7, getLangB());
 		stmt.executeUpdate();
 	}
 
@@ -318,8 +332,8 @@ public class PhraseEntry implements DBExecutable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("id=%d rus=\'%s\' pl=\'%s\' [%s]\n", getId(), //$NON-NLS-1$
-				getLangBText(), getLangAText(), getCreationDate()));
+		sb.append(String.format("id=%d %s=\'%s\' %s=\'%s\' [%s]\n", getId(), //$NON-NLS-1$
+				getLangA(), getLangAText(), getLangB(), getLangBText(), getCreationDate()));
 
 		for (RevisionEntry re : revisions) {
 			sb.append(String.format("\t%s [%d]\n", re.date.toString(), //$NON-NLS-1$
@@ -327,6 +341,22 @@ public class PhraseEntry implements DBExecutable {
 		}
 
 		return sb.toString();
+	}
+
+	public String getLangA() {
+		return langA;
+	}
+
+	public void setLangA(String langA) {
+		this.langA = langA;
+	}
+
+	public String getLangB() {
+		return langB;
+	}
+
+	public void setLangB(String langB) {
+		this.langB = langB;
 	}
 
 }
