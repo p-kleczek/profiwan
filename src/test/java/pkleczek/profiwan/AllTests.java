@@ -8,7 +8,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ pkleczek.profiwan.utils.DBUtilsTest.class,
 		pkleczek.profiwan.model.PhraseEntryTest.class,
 		pkleczek.profiwan.model.RevisionEntryTest.class,
-		pkleczek.profiwan.model.RevisionsSessionTest.class})
+		pkleczek.profiwan.model.RevisionsSessionTest.class,
+		pkleczek.profiwan.gui.DictionaryDialogTest.class})
 public class AllTests {
 
 }
