@@ -1,150 +1,160 @@
 package pkleczek.profiwan.model;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.swing.JOptionPane;
 
 import org.joda.time.DateTime;
 
-import pkleczek.Messages;
-import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
-import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelper;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 
 public class RevisionsSession {
-	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
+	@SuppressWarnings("unused")
+	private static final String LOG_TAG = RevisionsSession.class.getName();
 
 	/**
-	 * List of pending revisions.
+	 * List of phrases pending for revision.
 	 */
-	private LinkedList<PhraseEntry> pendingRevisions = new LinkedList<>();
+	private LinkedList<PhraseEntry> pendingPhrases = new LinkedList<PhraseEntry>();
 
 	/**
 	 * Maps phrase's ID on a corresponding revision entry.
 	 */
-	private Map<Integer, RevisionEntry> revisionEntries = new HashMap<Integer, RevisionEntry>();
+	private Map<Long, RevisionEntry> revisionEntries = new HashMap<Long, RevisionEntry>();
 
-	private ListIterator<PhraseEntry> pendingRevisionsIterator = null;
-	private PhraseEntry currentRevision = null;
+	/**
+	 * Cyclic iterator over pending phrases.
+	 */
+	private Iterator<PhraseEntry> pendingRevisionsIterator;
 
-	private boolean enteredCorrectly = false;
+	/**
+	 * Currently revised phrase.
+	 */
+	private PhraseEntry currentPhrase = null;
+
+	/**
+	 * Total number of revised phrases.
+	 */
 	private int wordsNumber = 0;
-	private int correctWordsNumber = 0;
-	private int revisionsNumber = 1;
 
-	public RevisionsSession() {
+	/**
+	 * Total number of correctly typed phrases so far.
+	 */
+	private int correctWordsNumber = 0;
+
+	/**
+	 * Total number of revisions in this session so far (including repetitions).
+	 */
+	private int revisionsNumber = 0;
+
+	private DatabaseHelper dbHelper;
+
+	public RevisionsSession(DatabaseHelper dbHelper) {
+		this.dbHelper = dbHelper;
+
+		initialize();
 	}
 
-	public void prepareRevisions() {
-		List<PhraseEntry> dictionary = null;
-		try {
-			dictionary = DBUtils.getDictionary();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private void initialize() {
+		buildUpListOfPendingPhrases();
+
+		if (hasRevisions()) {
+			nextRevision();
 		}
+	}
+
+	private void buildUpListOfPendingPhrases() {
+		List<PhraseEntry> dictionary = dbHelper.getDictionary();
 
 		for (PhraseEntry pe : dictionary) {
 			if (pe.isReviseNow()) {
-				pendingRevisions.add(pe);
+				pendingPhrases.add(pe);
 				revisionEntries.put(pe.getId(), prepareRevisionEntry(pe));
 			}
 		}
 
-		Collections.shuffle(pendingRevisions);
+		Collections.shuffle(pendingPhrases);
+		pendingRevisionsIterator = Iterators.cycle(pendingPhrases);
 
-		wordsNumber = pendingRevisions.size();
-		pendingRevisionsIterator = pendingRevisions.listIterator();
+		wordsNumber = pendingPhrases.size();
 	}
 
 	private RevisionEntry prepareRevisionEntry(PhraseEntry phrase) {
-		RevisionEntry revision = new RevisionEntry();
-		revision.date = DateTime.now();
+		RevisionEntry newRevision = new RevisionEntry();
+		newRevision.setCreatedAt(DateTime.now());
 
-		List<RevisionEntry> revisions = phrase.getRevisions();
-		if (!revisions.isEmpty()) {
-			RevisionEntry re = revisions.get(revisions.size() - 1);
+		RevisionEntry lastRevision = Iterables.getLast(phrase.getRevisions(),
+				null);
 
-			if (re.isToContinue()) {
-				revision = re;
-			}
-		}
+		boolean isToBeContinued = lastRevision != null
+				&& lastRevision.isToContinue();
 
-		return revision;
+		return isToBeContinued ? lastRevision : newRevision;
 	}
 
 	public boolean hasRevisions() {
-		return !pendingRevisions.isEmpty();
+		return !pendingPhrases.isEmpty();
+	}
+
+	public boolean isEnteredCorrectly(CharSequence input) {
+		return currentPhrase.getLangBText().equals(input);
 	}
 
 	public boolean processTypedWord(String input) {
-		currentRevision = pendingRevisionsIterator.next();
-		enteredCorrectly = currentRevision.getLangBText().equals(input);
+		boolean enteredCorrectly = isEnteredCorrectly(input);
 
-		RevisionEntry re = revisionEntries.get(currentRevision.getId());
-		if (re.mistakes == 0) {
-			try {
-				re.insertDBEntry(currentRevision.getId());
-				currentRevision.getRevisions().add(re);
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		RevisionEntry re = revisionEntries.get(currentPhrase.getId());
+
+		// Revisions for the first time today.
+		if (re.getMistakes() == 0) {
+			dbHelper.createRevision(re, currentPhrase.getId());
 		}
 
 		if (enteredCorrectly) {
-			re.mistakes = -re.mistakes;
-			confirmRevision(currentRevision);
+			acceptRevision();
 		} else {
-			re.mistakes--;
+			re.nextMistake();
 		}
 
-		try {
-			re.updateDBEntry();
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		dbHelper.updateRevision(re);
 
 		return enteredCorrectly;
 	}
 
 	public PhraseEntry getCurrentPhrase() {
-		return currentRevision;
+		return currentPhrase;
 	}
 
-	private void confirmRevision(PhraseEntry pe) {
-		RevisionEntry re = new RevisionEntry();
-		pe.getRevisions().add(re);
+	/**
+	 * Marks current revision as correct (regardless of the actual value of the
+	 * input).
+	 */
+	public void acceptRevision() {
+		RevisionEntry re = revisionEntries.get(currentPhrase.getId());
+		re.enteredCorrectly();
+
+		revisionEntries.remove(currentPhrase.getId());
 		pendingRevisionsIterator.remove();
-		revisionEntries.remove(pe.getId());
+
 		correctWordsNumber++;
 	}
 
-	public void acceptRevision() {
-		if (!enteredCorrectly) {
-			confirmRevision(pendingRevisionsIterator.previous());
-		}
-	}
-
+	/**
+	 * Sets new text for revised language text.
+	 * 
+	 * @param newText
+	 *            new text
+	 */
 	public void editPhrase(String newText) {
-		currentRevision.setLangBText(newText);
-
-		try {
-			currentRevision.updateDBEntry();
-		} catch (SQLException e1) {
-			JOptionPane
-					.showMessageDialog(
-							null,
-							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-			logger.severe(e1.toString());
-		}
+		currentPhrase.setLangBText(newText);
+		dbHelper.updatePhrase(currentPhrase);
 	}
 
 	public int getWordsNumber() {
@@ -160,22 +170,19 @@ public class RevisionsSession {
 	}
 
 	public int getPendingRevisionsSize() {
-		return pendingRevisions.size();
+		return pendingPhrases.size();
 	}
 
-	public void nextWord() {
+	/**
+	 * Proceeds to the next phrase.
+	 */
+	public void nextRevision() {
 		if (!hasRevisions()) {
-			return;
+			throw new AssertionError();
 		}
 
-		if (!pendingRevisionsIterator.hasNext()) {
-			pendingRevisionsIterator = pendingRevisions.listIterator();
-		}
-
+		currentPhrase = pendingRevisionsIterator.next();
 		revisionsNumber++;
 	}
 
-	public PhraseEntry getNextWord() {
-		return pendingRevisions.get(pendingRevisionsIterator.nextIndex());
-	}
 }

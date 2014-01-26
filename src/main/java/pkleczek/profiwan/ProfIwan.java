@@ -11,6 +11,8 @@ import javax.swing.JFrame;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.MainFrame;
 import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 public class ProfIwan {
 
@@ -22,7 +24,7 @@ public class ProfIwan {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static FileHandler fileTxt;
 
-	public static boolean inDebugMode = false;
+	public static boolean inDebugMode = true;
 
 	{
 		try {
@@ -46,7 +48,7 @@ public class ProfIwan {
 					@Override
 					public void run() {
 						try {
-							DBUtils.getConnection().close();
+							DatabaseHelperImpl.getConnection().close();
 						} catch (SQLException e) {
 							logger.severe(e.toString());
 						}

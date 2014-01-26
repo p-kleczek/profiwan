@@ -155,7 +155,7 @@ public class RevisionsDialog extends JDialog {
 		gbc_lblCorrect.gridy = 3;
 		contentPane.add(lblStats, gbc_lblCorrect);
 
-		lblPolish.setText(revisionSession.getNextWord().getLangAText()); // XXX:
+		lblPolish.setText(revisionSession.getCurrentPhrase().getLangAText()); // XXX:
 																		// checkme!
 		lblStats.setText("0 / " + revisionSession.getWordsNumber()); //$NON-NLS-1$
 
@@ -220,12 +220,12 @@ public class RevisionsDialog extends JDialog {
 		btnEdit.setEnabled(false);
 		btnAccept.setEnabled(false);
 
-		revisionSession.nextWord();
-
 		if (!revisionSession.hasRevisions()) {
 			finishRevisions();
 		} else {
-			lblPolish.setText(revisionSession.getNextWord().getLangAText());
+			revisionSession.nextRevision();
+
+			lblPolish.setText(revisionSession.getCurrentPhrase().getLangAText());
 
 			textField.setEditable(true);
 			textField.setText(""); //$NON-NLS-1$

@@ -14,22 +14,28 @@ import org.junit.Test;
 import pkleczek.profiwan.ProfIwan;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 import utils.TestUtils;
 
 public class DictionaryDialogTest {
 
+	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+
 	@Before
-	public void setUpDB() throws SQLException {
+	public void recreateDB() throws SQLException {
+		((DatabaseHelperImpl) dbHelper).recreateTables();
+
 		ProfIwan.inDebugMode = true;
-		DBUtils.recreateTables();
 	}
-	
+
 	@Test
 	public void testAddRowEmptyDB() throws SQLException {
 		DictionaryDialog dlg = new DictionaryDialog();
 
 		DictionaryTable tbl = (DictionaryTable) TestUtils.getChildNamed(dlg,
 				"table");
+		assertNotNull(tbl);
 
 		JButton btn = (JButton) TestUtils.getChildNamed(dlg, "btnAdd");
 		assertNotNull(btn);
@@ -44,6 +50,7 @@ public class DictionaryDialogTest {
 
 		DictionaryTable tbl = (DictionaryTable) TestUtils.getChildNamed(dlg,
 				"table");
+		assertNotNull(tbl);
 
 		JButton btn = (JButton) TestUtils.getChildNamed(dlg, "btnAdd");
 		assertNotNull(btn);
@@ -60,13 +67,14 @@ public class DictionaryDialogTest {
 
 		DictionaryTable tbl = (DictionaryTable) TestUtils.getChildNamed(dlg,
 				"table");
+		assertNotNull(tbl);
 
 		JButton btn = (JButton) TestUtils.getChildNamed(dlg, "btnRemove");
 		assertNotNull(btn);
 
 		btn.doClick();
 		
-		assertEquals(0, DBUtils.getDictionary().size());
+		assertEquals(0, dbHelper.getDictionary().size());
 		assertEquals(0, tbl.getModel().getRowCount());
 	}	
 	
@@ -76,9 +84,9 @@ public class DictionaryDialogTest {
 		
 		pe.setLangAText("pl");
 		pe.setLangBText("rus");
-		pe.setCreationDate(dt);
+		pe.setCreatedAt(dt);
 		pe.setLabel("lab");
 		
-		pe.insertDBEntry();
+		dbHelper.createPhrase(pe);
 	}
 }

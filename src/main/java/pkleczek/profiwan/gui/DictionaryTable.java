@@ -16,13 +16,15 @@ import org.joda.time.format.DateTimeFormatter;
 import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 import pkleczek.profiwan.utils.TextUtils;
 
 @SuppressWarnings("serial")
 public class DictionaryTable extends JTable {
 
-	private static final DateTimeFormatter dateOutputFormatter = DateTimeFormat.forPattern(
-			"yyyy-MM-dd"); //$NON-NLS-1$
+	private static final DateTimeFormatter dateOutputFormatter = DateTimeFormat
+			.forPattern("yyyy-MM-dd"); //$NON-NLS-1$
 
 	private static final int RUS_COLUMN = 0;
 	private static final int PL_COLUMN = 1;
@@ -39,6 +41,7 @@ public class DictionaryTable extends JTable {
 	private int lastModifiedEntryId = -1;
 
 	private DictionaryTable instance = this;
+	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
 
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		setModel(dtm);
@@ -61,7 +64,8 @@ public class DictionaryTable extends JTable {
 					String val = (String) dtm.getValueAt(row, col);
 
 					if (val.contains(TextUtils.CUSTOM_ACCENT_MARKER)) {
-						dtm.setValueAt(TextUtils.getAccentedString(val), row, col);
+						dtm.setValueAt(TextUtils.getAccentedString(val), row,
+								col);
 					}
 
 					instance.dictionary.get(row).setLangBText(val);
@@ -81,15 +85,10 @@ public class DictionaryTable extends JTable {
 				}
 
 				if (col != -1) {
-					lastModifiedEntryId = instance.dictionary.get(row).getId();
+					lastModifiedEntryId = (int) instance.dictionary.get(row)
+							.getId();
 
-					try {
-						instance.dictionary.get(row).updateDBEntry();
-					} catch (SQLException e1) {
-						JOptionPane.showMessageDialog(
-								null,
-								Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-					}
+					dbHelper.updatePhrase(instance.dictionary.get(row));
 
 					Debug.printDict("update"); //$NON-NLS-1$
 				}
@@ -99,26 +98,20 @@ public class DictionaryTable extends JTable {
 
 	private void addRowToDTM(PhraseEntry pe) {
 		String isInRevisionStr = pe.isInRevisions() ? "y" : ""; //$NON-NLS-1$ //$NON-NLS-2$
-		dtm.addRow(new Object[] { pe.getLangBText(), pe.getLangAText(),
-				pe.getLabel(), isInRevisionStr,
-				dateOutputFormatter.print(pe.getCreationDate()) });
+		dtm.addRow(new Object[] {
+				pe.getLangBText(),
+				pe.getLangAText(),
+				pe.getLabel(),
+				isInRevisionStr,
+				dateOutputFormatter.print(pe.getCreatedAt()) });
 	}
 
 	public void addRow() {
 		PhraseEntry entry = new PhraseEntry();
-		entry.setCreationDate(DateTime.now());
+		entry.setCreatedAt(DateTime.now());
 
 		addRowToDTM(entry);
-
-		try {
-			entry.insertDBEntry();
-		} catch (SQLException e) {
-			JOptionPane
-					.showMessageDialog(
-							null,
-							Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-
+		dbHelper.createPhrase(entry);
 		dictionary.add(entry);
 
 		Debug.printDict("add"); //$NON-NLS-1$
@@ -129,16 +122,7 @@ public class DictionaryTable extends JTable {
 
 		if (getSelectedRow() != -1) {
 			dtm.removeRow(selectedRowInx);
-
-			try {
-				dictionary.get(selectedRowInx).deleteDBEntry();
-			} catch (SQLException e) {
-				JOptionPane
-						.showMessageDialog(
-								null,
-								Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-
+			dbHelper.deletePhrase(dictionary.get(selectedRowInx).getId());
 			dictionary.remove(selectedRowInx);
 
 			Debug.printDict("delete"); //$NON-NLS-1$

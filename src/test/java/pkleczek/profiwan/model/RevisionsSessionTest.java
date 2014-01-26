@@ -1,7 +1,7 @@
 package pkleczek.profiwan.model;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -12,86 +12,116 @@ import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import pkleczek.profiwan.ProfIwan;
-import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
-import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 public class RevisionsSessionTest {
 
-	private RevisionsSession rs;
+	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
 
 	@Before
-	public void prepareDB() throws SQLException {
-		ProfIwan.inDebugMode = true;
-		DBUtils.recreateTables();
+	public void recreateDB() throws SQLException {
+		((DatabaseHelperImpl) dbHelper).recreateTables();
 
-		rs = new RevisionsSession();
+		ProfIwan.inDebugMode = true;
 	}
+
+	private RevisionsSession rs = null;
 
 	@Test
 	public void testPrepareRevisions() throws Exception {
 
 		PhraseEntry pe = new PhraseEntry();
 		pe.setInRevisions(true);
-		pe.setCreationDate(DateTime.now());
-		pe.insertDBEntry();
+		pe.setCreatedAt(DateTime.now());
+		dbHelper.createPhrase(pe);
 
 		RevisionEntry re = new RevisionEntry();
-		re.date = new DateTime(0L);
-		re.mistakes = 0;
-		re.insertDBEntry(pe.getId());
-		
-		rs.prepareRevisions();
-		
+		re.setCreatedAt(new DateTime(0L));
+		re.setMistakes(0);
+		dbHelper.createRevision(re, pe.getId());
+
+		rs = new RevisionsSession(dbHelper);
+
 		assertTrue(rs.hasRevisions());
 		assertEquals(1, rs.getPendingRevisionsSize());
 
-		 Field field = RevisionsSession.class.getDeclaredField("revisionEntries");
-		 field.setAccessible(true);
+		Field field = RevisionsSession.class
+				.getDeclaredField("revisionEntries");
+		field.setAccessible(true);
 
-		 Map<Integer, RevisionEntry> map = (Map<Integer, RevisionEntry>) field.get(rs);
-		 assertEquals(1, map.size());
+		Map<Integer, RevisionEntry> map = (Map<Integer, RevisionEntry>) field
+				.get(rs);
+		assertEquals(1, map.size());
 	}
 
 	@Test
 	public void testPrepareRevisionEntryBrandNew() throws Exception {
 		PhraseEntry pe = new PhraseEntry();
-		pe.setCreationDate(DateTime.now());
+		pe.setCreatedAt(DateTime.now());
 
 		RevisionEntry re = new RevisionEntry();
-		re.id = 1;
-		re.date = new DateTime(1000L);
-		re.mistakes = -1;
+		re.setId(1);
+		re.setCreatedAt(new DateTime(1000L));
+		re.setMistakes(-1);
 		pe.getRevisions().add(re);
 
-		Method method = RevisionsSession.class
-				.getDeclaredMethod("prepareRevisionEntry", PhraseEntry.class);
+		rs = new RevisionsSession(dbHelper);
+
+		Method method = RevisionsSession.class.getDeclaredMethod(
+				"prepareRevisionEntry", PhraseEntry.class);
 		method.setAccessible(true);
 		RevisionEntry ret = (RevisionEntry) method.invoke(rs, pe);
-		
-		assertNull(ret.id);
-		assertEquals(0, ret.mistakes);
+
+		assertEquals(0, ret.getId());
+		assertEquals(0, ret.getMistakes());
 	}
-	
+
 	@Test
 	public void testPrepareRevisionEntryNoContinue() throws Exception {
 		PhraseEntry pe = new PhraseEntry();
-		pe.setCreationDate(DateTime.now());
+		pe.setCreatedAt(DateTime.now());
 
 		RevisionEntry re = new RevisionEntry();
-		re.id = 1;
-		re.date = DateTime.now();
-		re.mistakes = -1;
+		re.setId(1);
+		re.setCreatedAt(new DateTime(1000L));
+		re.setMistakes(-1);
 		pe.getRevisions().add(re);
 
-		Method method = RevisionsSession.class
-				.getDeclaredMethod("prepareRevisionEntry", PhraseEntry.class);
+		rs = new RevisionsSession(dbHelper);
+
+		Method method = RevisionsSession.class.getDeclaredMethod(
+				"prepareRevisionEntry", PhraseEntry.class);
 		method.setAccessible(true);
+
 		RevisionEntry ret = (RevisionEntry) method.invoke(rs, pe);
-		
+		assertTrue(ret.getId() != re.getId());
+
+		// XXX: use hamcrest!
+		// assertThat(ret, is(not(re)));
+	}
+
+	@Test
+	public void testPrepareRevisionEntryContinue() throws Exception {
+		PhraseEntry pe = new PhraseEntry();
+		pe.setCreatedAt(DateTime.now());
+
+		RevisionEntry re = new RevisionEntry();
+		re.setId(1);
+		re.setCreatedAt(DateTime.now());
+		re.setMistakes(-1);
+		pe.getRevisions().add(re);
+
+		rs = new RevisionsSession(dbHelper);
+
+		Method method = RevisionsSession.class.getDeclaredMethod(
+				"prepareRevisionEntry", PhraseEntry.class);
+		method.setAccessible(true);
+
+		RevisionEntry ret = (RevisionEntry) method.invoke(rs, pe);
 		assertSame(ret, re);
-	}	
+	}
 }

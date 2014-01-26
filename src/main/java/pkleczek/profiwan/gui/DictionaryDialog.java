@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
 
 import pkleczek.Messages;
 import pkleczek.profiwan.model.PhraseEntry;
-import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 @SuppressWarnings("serial")
 public class DictionaryDialog extends JDialog {
@@ -33,7 +33,7 @@ public class DictionaryDialog extends JDialog {
 	public DictionaryDialog() throws SQLException {
 		setTitle(Messages.getString("DictionaryDialog.title")); //$NON-NLS-1$
 		setModal(true);
-		dictionary = DBUtils.getDictionary();
+		dictionary = DatabaseHelperImpl.getInstance().getDictionary();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 800, 300);
@@ -49,6 +49,7 @@ public class DictionaryDialog extends JDialog {
 		contentPane.setLayout(gbl_contentPane);
 
 		final DictionaryTable dictionaryTable = new DictionaryTable(dictionary);
+		dictionaryTable.setName("table");
 		dictionaryTable.setMinimumSize(new Dimension(500, 300));
 		dictionaryTable.getColumnModel().getColumn(3).setPreferredWidth(20);
 		dictionaryTable.getColumnModel().getColumn(4).setPreferredWidth(20);
@@ -83,6 +84,7 @@ public class DictionaryDialog extends JDialog {
 		panel.setLayout(gbl_panel);
 
 		JButton btnAdd = new JButton("+"); //$NON-NLS-1$
+		btnAdd.setName("btnAdd");
 		btnAdd.addActionListener(new ActionListener() {
 
 			@Override
@@ -97,6 +99,7 @@ public class DictionaryDialog extends JDialog {
 		panel.add(btnAdd, gbc_btnAdd);
 
 		JButton btnRemove = new JButton("-"); //$NON-NLS-1$
+		btnRemove.setName("btnRemove");
 		btnRemove.addActionListener(new ActionListener() {
 
 			@Override

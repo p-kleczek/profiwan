@@ -15,6 +15,8 @@ import javax.swing.border.EmptyBorder;
 
 import pkleczek.Messages;
 import pkleczek.profiwan.model.RevisionsSession;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
@@ -57,8 +59,8 @@ public class MainFrame extends JFrame {
 				Messages.getString("MainFrame.revisions")); //$NON-NLS-1$
 		btnRevisions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RevisionsSession revisionSession = new RevisionsSession();
-				revisionSession.prepareRevisions();
+				RevisionsSession revisionSession = new RevisionsSession(
+						DatabaseHelperImpl.getInstance());
 
 				if (revisionSession.hasRevisions()) {
 					RevisionsDialog dlg = new RevisionsDialog(revisionSession);

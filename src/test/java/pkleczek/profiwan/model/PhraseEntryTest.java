@@ -1,19 +1,32 @@
 package pkleczek.profiwan.model;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
 import java.util.List;
 
 import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
 
-import pkleczek.profiwan.model.PhraseEntry.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
+import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 public class PhraseEntryTest {
 
+	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+	
+	@Before
+	public void recreateDB() throws SQLException {
+		((DatabaseHelperImpl) dbHelper).recreateTables();
+	}
+	
 	@Test
 	public void testIsReviseNowNotInRevision() {
 		PhraseEntry pe = new PhraseEntry();
@@ -28,8 +41,8 @@ public class PhraseEntryTest {
 		RevisionEntry re = null;
 
 		re = new RevisionEntry();
-		re.date = DateTime.now().minusDays(PhraseEntry.MIN_REVISION_INTERVAL + 1);
-		re.mistakes = 1;
+		re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_REVISION_INTERVAL + 1));
+		re.setMistakes(1);
 		pe.getRevisions().add(re);
 
 		assertTrue(pe.isReviseNow());
@@ -41,8 +54,8 @@ public class PhraseEntryTest {
 		RevisionEntry re = null;
 
 		re = new RevisionEntry();
-		re.date = DateTime.now();
-		re.mistakes = 1;
+		re.setCreatedAt(DateTime.now());
+		re.setMistakes(1);
 		pe.getRevisions().add(re);
 
 		assertFalse(pe.isReviseNow());
@@ -55,8 +68,8 @@ public class PhraseEntryTest {
 
 		for (int i = 0; i < PhraseEntry.MIN_CORRECT_STREAK; i++) {
 			re = new RevisionEntry();
-			re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-			re.mistakes = 0;
+			re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+			re.setMistakes(0);
 			pe.getRevisions().add(re);
 		}
 
@@ -71,8 +84,8 @@ public class PhraseEntryTest {
 
 		for (int i = 0; i < PhraseEntry.MIN_CORRECT_STREAK + 1; i++) {
 			re = new RevisionEntry();
-			re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-			re.mistakes = 0;
+			re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+			re.setMistakes(0);
 			pe.getRevisions().add(re);
 		}
 
@@ -87,14 +100,14 @@ public class PhraseEntryTest {
 
 		for (int i = 0; i < PhraseEntry.MIN_CORRECT_STREAK - 2; i++) {
 			re = new RevisionEntry();
-			re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-			re.mistakes = 0;
+			re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+			re.setMistakes(0);
 			pe.getRevisions().add(re);
 		}
 
 		re = new RevisionEntry();
-		re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-		re.mistakes = 1;
+		re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+		re.setMistakes(1);
 		pe.getRevisions().add(re);
 
 		assertEquals(PhraseEntry.MIN_REVISION_INTERVAL,
@@ -108,14 +121,14 @@ public class PhraseEntryTest {
 
 		for (int i = 0; i < PhraseEntry.MIN_CORRECT_STREAK + 2; i++) {
 			re = new RevisionEntry();
-			re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-			re.mistakes = 0;
+			re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+			re.setMistakes(0);
 			pe.getRevisions().add(re);
 		}
 
 		re = new RevisionEntry();
-		re.date = DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK);
-		re.mistakes = 1;
+		re.setCreatedAt(DateTime.now().minusDays(PhraseEntry.MIN_CORRECT_STREAK));
+		re.setMistakes(1);
 		pe.getRevisions().add(re);
 
 		assertEquals(PhraseEntry.MIN_REVISION_INTERVAL
@@ -129,12 +142,12 @@ public class PhraseEntryTest {
 		
 		pe.setLangAText("pl");
 		pe.setLangBText("rus");
-		pe.setCreationDate(dt);
+		pe.setCreatedAt(dt);
 		pe.setLabel("lab");
 		
-		pe.insertDBEntry();
+		dbHelper.createPhrase(pe);
 		
-		List<PhraseEntry> dictionary = DBUtils.getDictionary();
+		List<PhraseEntry> dictionary = dbHelper.getDictionary();
 		boolean found = false;
 		
 		for (PhraseEntry ipe : dictionary) {
@@ -147,8 +160,8 @@ public class PhraseEntryTest {
 			assertEquals(pe.getLangAText(), ipe.getLangAText());
 			assertEquals(pe.getLangBText(), ipe.getLangBText());
 			
-			int d1 = DBUtils.getIntFromDateTime(pe.getCreationDate());
-			int d2 = DBUtils.getIntFromDateTime(ipe.getCreationDate());
+			int d1 = DBUtils.getIntFromDateTime(pe.getCreatedAt());
+			int d2 = DBUtils.getIntFromDateTime(ipe.getCreatedAt());
 			assertEquals(d1, d2);
 
 			assertEquals(pe.getLabel(), ipe.getLabel());
@@ -164,18 +177,18 @@ public class PhraseEntryTest {
 		
 		pe.setLangAText("pl");
 		pe.setLangBText("rus");
-		pe.setCreationDate(dt);
+		pe.setCreatedAt(dt);
 		pe.setLabel("lab");
 		
-		pe.insertDBEntry();
+		dbHelper.createPhrase(pe);
 		
 		pe.setLangAText("plX");
 		pe.setLangBText("rusX");
 		pe.setLabel("labX");
+
+		dbHelper.updatePhrase(pe);
 		
-		pe.updateDBEntry();
-		
-		List<PhraseEntry> dictionary = DBUtils.getDictionary();
+		List<PhraseEntry> dictionary = dbHelper.getDictionary();
 		boolean found = false;
 		
 		for (PhraseEntry ipe : dictionary) {
@@ -189,7 +202,7 @@ public class PhraseEntryTest {
 			assertEquals(pe.getLangBText(), ipe.getLangBText());
 			
 			int d1 = DBUtils.getIntFromDateTime(dt);
-			int d2 = DBUtils.getIntFromDateTime(ipe.getCreationDate());
+			int d2 = DBUtils.getIntFromDateTime(ipe.getCreatedAt());
 			assertEquals(d1, d2);
 
 			assertEquals(pe.getLabel(), ipe.getLabel());
@@ -201,12 +214,12 @@ public class PhraseEntryTest {
 	@Test
 	public void testDeleteFromDB() throws SQLException {
 		PhraseEntry pe = new PhraseEntry();
-		pe.setCreationDate(DateTime.now());
+		pe.setCreatedAt(DateTime.now());
 		
-		pe.insertDBEntry();
-		pe.deleteDBEntry();
+		dbHelper.createPhrase(pe);
+		dbHelper.deletePhrase(pe.getId());
 		
-		List<PhraseEntry> dictionary = DBUtils.getDictionary();
+		List<PhraseEntry> dictionary = dbHelper.getDictionary();
 		for (PhraseEntry ipe : dictionary) {
 			assertThat(ipe.getId(), is(not(pe.getId())));
 		}
