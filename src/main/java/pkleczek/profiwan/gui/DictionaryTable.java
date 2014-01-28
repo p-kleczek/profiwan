@@ -17,7 +17,7 @@ import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 import pkleczek.profiwan.utils.TextUtils;
 
 @SuppressWarnings("serial")
@@ -41,7 +41,7 @@ public class DictionaryTable extends JTable {
 	private int lastModifiedEntryId = -1;
 
 	private DictionaryTable instance = this;
-	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+	DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
 
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		setModel(dtm);

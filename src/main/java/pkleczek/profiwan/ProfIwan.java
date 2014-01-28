@@ -12,7 +12,7 @@ import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.MainFrame;
 import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 
 public class ProfIwan {
 
@@ -48,7 +48,7 @@ public class ProfIwan {
 					@Override
 					public void run() {
 						try {
-							DatabaseHelperImpl.getConnection().close();
+							DatabaseHelperImplMock.getConnection().close();
 						} catch (SQLException e) {
 							logger.severe(e.toString());
 						}

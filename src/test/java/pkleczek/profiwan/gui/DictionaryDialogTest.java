@@ -15,16 +15,16 @@ import pkleczek.profiwan.ProfIwan;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 import utils.TestUtils;
 
 public class DictionaryDialogTest {
 
-	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+	DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
 
 	@Before
 	public void recreateDB() throws SQLException {
-		((DatabaseHelperImpl) dbHelper).recreateTables();
+		((DatabaseHelperImplMock) dbHelper).recreateTables();
 
 		ProfIwan.inDebugMode = true;
 	}

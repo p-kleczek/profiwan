@@ -16,7 +16,7 @@ import javax.swing.border.EmptyBorder;
 import pkleczek.Messages;
 import pkleczek.profiwan.model.RevisionsSession;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
@@ -60,7 +60,7 @@ public class MainFrame extends JFrame {
 		btnRevisions.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				RevisionsSession revisionSession = new RevisionsSession(
-						DatabaseHelperImpl.getInstance());
+						DatabaseHelperImplMock.getInstance());
 
 				if (revisionSession.hasRevisions()) {
 					RevisionsDialog dlg = new RevisionsDialog(revisionSession);

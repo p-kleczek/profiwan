@@ -13,17 +13,17 @@ import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.RevisionEntry;
 import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 
 public class Debug {
 
 	// for tests
 	public static void prepareDB() {
 
-		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+		DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
 
 		try {
-			((DatabaseHelperImpl) dbHelper).recreateTables();
+			((DatabaseHelperImplMock) dbHelper).recreateTables();
 
 			PhraseEntry e = null;
 			PhraseEntry e1 = null;
@@ -98,7 +98,7 @@ public class Debug {
 	}
 
 	public static void printDict(String operation) {
-		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+		DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
 		List<PhraseEntry> dict = dbHelper.getDictionary();
 		System.out.println(String.format("--- %s (%d) ---", operation,
 				dict.size()));
@@ -111,7 +111,7 @@ public class Debug {
 	}
 
 	public static void printRev(String str) {
-		Connection conn = DatabaseHelperImpl.getConnection();
+		Connection conn = DatabaseHelperImplMock.getConnection();
 		Statement stmt = null;
 		ResultSet rs = null;
 
