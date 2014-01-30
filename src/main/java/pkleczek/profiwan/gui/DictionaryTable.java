@@ -1,9 +1,7 @@
 package pkleczek.profiwan.gui;
 
-import java.sql.SQLException;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -17,7 +15,7 @@ import pkleczek.Messages;
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImplMock;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 import pkleczek.profiwan.utils.TextUtils;
 
 @SuppressWarnings("serial")
@@ -41,7 +39,7 @@ public class DictionaryTable extends JTable {
 	private int lastModifiedEntryId = -1;
 
 	private DictionaryTable instance = this;
-	DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
+	DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
 
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		setModel(dtm);

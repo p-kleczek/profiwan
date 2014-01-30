@@ -10,9 +10,7 @@ import javax.swing.JFrame;
 
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.MainFrame;
-import pkleczek.profiwan.utils.DBUtils;
-import pkleczek.profiwan.utils.DatabaseHelper;
-import pkleczek.profiwan.utils.DatabaseHelperImplMock;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 public class ProfIwan {
 
@@ -24,7 +22,7 @@ public class ProfIwan {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static FileHandler fileTxt;
 
-	public static boolean inDebugMode = true;
+	public static boolean inDebugMode = false;
 
 	{
 		try {
@@ -48,7 +46,7 @@ public class ProfIwan {
 					@Override
 					public void run() {
 						try {
-							DatabaseHelperImplMock.getConnection().close();
+							DatabaseHelperImpl.getConnection().close();
 						} catch (SQLException e) {
 							logger.severe(e.toString());
 						}
@@ -76,6 +74,8 @@ public class ProfIwan {
 			Debug.prepareDB();
 			Debug.printDict("init");
 		}
+		
+//		Debug.printRevisionsNumber();
 		
 		// TODO: transfer z dropboxa
 		

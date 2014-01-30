@@ -50,6 +50,7 @@ public class DatabaseHelperImpl implements DatabaseHelper {
 			conf.enforceForeignKeys(true);
 
 			String modeURL = ProfIwan.inDebugMode ? debugDb : prodDb;
+//			String modeURL = debugDb;
 
 			c = DriverManager.getConnection(modeURL, conf.toProperties());
 		} catch (ClassNotFoundException | SQLException e) {

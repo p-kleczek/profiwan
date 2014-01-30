@@ -8,11 +8,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.joda.time.DateTime;
+import org.joda.time.JodaTimePermission;
 
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.RevisionEntry;
+import pkleczek.profiwan.model.RevisionsSession;
 import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 
 public class Debug {
@@ -20,10 +23,10 @@ public class Debug {
 	// for tests
 	public static void prepareDB() {
 
-		DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
+		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
 
 		try {
-			((DatabaseHelperImplMock) dbHelper).recreateTables();
+			((DatabaseHelperImpl) dbHelper).recreateTables();
 
 			PhraseEntry e = null;
 			PhraseEntry e1 = null;
@@ -98,7 +101,7 @@ public class Debug {
 	}
 
 	public static void printDict(String operation) {
-		DatabaseHelper dbHelper = DatabaseHelperImplMock.getInstance();
+		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
 		List<PhraseEntry> dict = dbHelper.getDictionary();
 		System.out.println(String.format("--- %s (%d) ---", operation,
 				dict.size()));
@@ -111,7 +114,7 @@ public class Debug {
 	}
 
 	public static void printRev(String str) {
-		Connection conn = DatabaseHelperImplMock.getConnection();
+		Connection conn = DatabaseHelperImpl.getConnection();
 		Statement stmt = null;
 		ResultSet rs = null;
 
@@ -146,6 +149,19 @@ public class Debug {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public static void printRevisionsNumber() {
+		final int timespan = 80;
+		DateTime dt = DateTime.now();
+		dt.minusDays(timespan);
+		
+		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+		
+		for (int i = 0; i < timespan; i++) {
+			System.out.println(RevisionsSession.getListOfPendingPhrases(dbHelper, dt).size());
+			dt.plusDays(1);
 		}
 	}
 }

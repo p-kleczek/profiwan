@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
 
 import pkleczek.Messages;
 import pkleczek.profiwan.model.PhraseEntry;
-import pkleczek.profiwan.utils.DatabaseHelperImplMock;
+import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 @SuppressWarnings("serial")
 public class DictionaryDialog extends JDialog {
@@ -33,7 +33,7 @@ public class DictionaryDialog extends JDialog {
 	public DictionaryDialog() throws SQLException {
 		setTitle(Messages.getString("DictionaryDialog.title")); //$NON-NLS-1$
 		setModal(true);
-		dictionary = DatabaseHelperImplMock.getInstance().getDictionary();
+		dictionary = DatabaseHelperImpl.getInstance().getDictionary();
 		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 800, 300);
