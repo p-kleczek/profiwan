@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 
 import pkleczek.profiwan.debug.Debug;
 import pkleczek.profiwan.gui.MainFrame;
+import pkleczek.profiwan.utils.DatabaseHelper;
 import pkleczek.profiwan.utils.DatabaseHelperImpl;
 
 public class ProfIwan {
@@ -22,7 +23,7 @@ public class ProfIwan {
 	private static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static FileHandler fileTxt;
 
-	public static boolean inDebugMode = false;
+	public static boolean inDebugMode = true;
 
 	{
 		try {
@@ -71,8 +72,11 @@ public class ProfIwan {
 		
 		// test
 		if (inDebugMode) {
-			Debug.prepareDB();
-			Debug.printDict("init");
+//			Debug.prepareDB();
+//			Debug.printDict("init");
+			
+//			Debug.testCSVExport();
+			Debug.testCSVImport();
 		}
 		
 //		Debug.printRevisionsNumber();

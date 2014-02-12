@@ -4,11 +4,16 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.smartcardio.ATR;
 
 import org.joda.time.DateTime;
-import org.joda.time.JodaTimePermission;
 
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.RevisionEntry;
@@ -16,7 +21,6 @@ import pkleczek.profiwan.model.RevisionsSession;
 import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
 import pkleczek.profiwan.utils.DatabaseHelperImpl;
-import pkleczek.profiwan.utils.DatabaseHelperImplMock;
 
 public class Debug {
 
@@ -125,7 +129,8 @@ public class Debug {
 			rs = stmt.executeQuery("SELECT * FROM Revision");
 
 			while (rs.next()) {
-				Date date = new Date((long) rs.getInt(DatabaseHelper.KEY_CREATED_AT) * 1000L);
+				Date date = new Date(
+						(long) rs.getInt(DatabaseHelper.KEY_CREATED_AT) * 1000L);
 				int mistakes = rs.getInt(DatabaseHelper.KEY_REVISION_MISTAKES);
 				int phrId = rs.getInt(DatabaseHelper.KEY_REVISION_PHRASE_ID);
 
@@ -151,17 +156,62 @@ public class Debug {
 			}
 		}
 	}
-	
+
 	public static void printRevisionsNumber() {
-		final int timespan = 80;
+		final int timespan = 15;
 		DateTime dt = DateTime.now();
-		dt.minusDays(timespan);
-		
+
 		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
-		
+
 		for (int i = 0; i < timespan; i++) {
-			System.out.println(RevisionsSession.getListOfPendingPhrases(dbHelper, dt).size());
-			dt.plusDays(1);
+			System.out.println(RevisionsSession.getListOfPendingPhrases(
+					dbHelper, dt).size());
+			dt = dt.plusDays(1);
 		}
+	}
+
+	public static void testCSVExport() {
+		DatabaseHelper dbhHelper = DatabaseHelperImpl.getInstance();
+		List<PhraseEntry> dict = dbhHelper.getDictionary();
+
+		String[] attribs = new String[] {
+				DatabaseHelper.KEY_ID,
+				DatabaseHelper.KEY_CREATED_AT,
+				DatabaseHelper.KEY_PHRASE_LANG1,
+				DatabaseHelper.KEY_PHRASE_LANG2,
+				DatabaseHelper.KEY_PHRASE_LANG1_TEXT,
+				DatabaseHelper.KEY_PHRASE_LANG2_TEXT,
+				DatabaseHelper.KEY_PHRASE_LABEL,
+				DatabaseHelper.KEY_PHRASE_IN_REVISION };
+
+		DBUtils.exportPhrasesToCSV("logs/phrases.csv", dict, attribs);
+
+		System.exit(0);
+	}
+
+	public static void testCSVImport() {
+		DatabaseHelper dbHelper = DatabaseHelperImpl.getInstance();
+
+		try {
+			((DatabaseHelperImpl) dbHelper).recreateTables();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		String[] attribs = new String[] {
+				DatabaseHelper.KEY_ID,
+//				DatabaseHelper.KEY_CREATED_AT,
+				DatabaseHelper.KEY_PHRASE_LANG1,
+				DatabaseHelper.KEY_PHRASE_LANG2,
+				DatabaseHelper.KEY_PHRASE_LANG1_TEXT,
+				DatabaseHelper.KEY_PHRASE_LANG2_TEXT,
+				DatabaseHelper.KEY_PHRASE_LABEL,
+				DatabaseHelper.KEY_PHRASE_IN_REVISION };
+
+		Set<String> setAttr = new HashSet<>(Arrays.asList(attribs));
+
+		Collection<PhraseEntry> list = DBUtils.importPhrasesFromCSV("logs/phrases.csv", setAttr, dbHelper);
+
+		System.out.println(list);
 	}
 }

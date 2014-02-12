@@ -9,6 +9,7 @@
 # Debug files
 log.txt*
 profiwan_debug.db
+*.csv
 
 # Backups
 /db_saves

@@ -24,7 +24,6 @@ import pkleczek.profiwan.model.RevisionEntry;
 //		null,
 //		Messages.getString("dbError"), Messages.getString("error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
 
-
 public class DatabaseHelperImpl implements DatabaseHelper {
 
 	private static DatabaseHelper instance;
@@ -50,7 +49,7 @@ public class DatabaseHelperImpl implements DatabaseHelper {
 			conf.enforceForeignKeys(true);
 
 			String modeURL = ProfIwan.inDebugMode ? debugDb : prodDb;
-//			String modeURL = debugDb;
+			// String modeURL = debugDb;
 
 			c = DriverManager.getConnection(modeURL, conf.toProperties());
 		} catch (ClassNotFoundException | SQLException e) {
@@ -175,8 +174,8 @@ public class DatabaseHelperImpl implements DatabaseHelper {
 			stmt.setString(KEY_PHRASE_LANG1_TEXT, phrase.getLangAText());
 			stmt.setString(KEY_PHRASE_LANG2_TEXT, phrase.getLangBText());
 			stmt.setInt(KEY_PHRASE_IN_REVISION, ir);
-			stmt.setInt(KEY_CREATED_AT, (int) (phrase.getCreatedAt()
-					.getMillis() / 1000));
+			stmt.setInt(KEY_CREATED_AT,
+					DBUtils.getIntFromDateTime(phrase.getCreatedAt()));
 			stmt.setString(KEY_PHRASE_LABEL, phrase.getLabel());
 			stmt.setString(KEY_PHRASE_LANG1, phrase.getLangA());
 			stmt.setString(KEY_PHRASE_LANG2, phrase.getLangB());
