@@ -51,7 +51,7 @@ public class RevisionsDialog extends JDialog {
 		setTitle(Messages.getString("RevisionsDialog.revisions")); //$NON-NLS-1$
 		setModal(true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 700, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -59,7 +59,7 @@ public class RevisionsDialog extends JDialog {
 		gbl_contentPane.columnWidths = new int[] { 178, 86, 0 };
 		gbl_contentPane.rowHeights = new int[] { 39, 0, 0, 0, 0 };
 		gbl_contentPane.columnWeights = new double[] {
-				0.0,
+				1.0,
 				0.0,
 				Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] {
@@ -72,8 +72,9 @@ public class RevisionsDialog extends JDialog {
 
 		JPanel panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panel.insets = new Insets(0, 0, 5, 5);
-		gbc_panel.anchor = GridBagConstraints.NORTHWEST;
+		gbc_panel.anchor = GridBagConstraints.NORTH;
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 0;
 		contentPane.add(panel, gbc_panel);
@@ -85,7 +86,7 @@ public class RevisionsDialog extends JDialog {
 		panel.setLayout(gbl_panel);
 
 		GridBagConstraints gbc_lblPolish = new GridBagConstraints();
-		gbc_lblPolish.anchor = GridBagConstraints.WEST;
+		gbc_lblPolish.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblPolish.insets = new Insets(0, 0, 5, 0);
 		gbc_lblPolish.gridx = 0;
 		gbc_lblPolish.gridy = 0;
@@ -112,13 +113,14 @@ public class RevisionsDialog extends JDialog {
 			}
 		});
 		GridBagConstraints gbc_btnStop = new GridBagConstraints();
+		gbc_btnStop.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnStop.insets = new Insets(0, 0, 5, 0);
 		gbc_btnStop.gridx = 1;
 		gbc_btnStop.gridy = 0;
 		contentPane.add(btnStop, gbc_btnStop);
 
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 1;
@@ -132,6 +134,7 @@ public class RevisionsDialog extends JDialog {
 		});
 		btnEdit.setEnabled(false);
 		GridBagConstraints gbc_btnEdit = new GridBagConstraints();
+		gbc_btnEdit.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnEdit.insets = new Insets(0, 0, 5, 0);
 		gbc_btnEdit.gridx = 1;
 		gbc_btnEdit.gridy = 1;
@@ -145,6 +148,7 @@ public class RevisionsDialog extends JDialog {
 		});
 		btnAccept.setEnabled(false);
 		GridBagConstraints gbc_btnAccept = new GridBagConstraints();
+		gbc_btnAccept.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnAccept.insets = new Insets(0, 0, 5, 0);
 		gbc_btnAccept.gridx = 1;
 		gbc_btnAccept.gridy = 2;
@@ -156,22 +160,24 @@ public class RevisionsDialog extends JDialog {
 		contentPane.add(lblStats, gbc_lblCorrect);
 
 		lblPolish.setText(revisionSession.getCurrentPhrase().getLangAText()); // XXX:
-																		// checkme!
+		// checkme!
 		lblStats.setText("0 / " + revisionSession.getWordsNumber()); //$NON-NLS-1$
 
 		pack();
 	}
-	
+
 	private void acceptRevision() {
 		if (state == State.ANSWER) {
 			revisionSession.acceptRevision();
+			lblStats.setText(revisionSession.getWordsNumber()
+					- revisionSession.getPendingRevisionsSize() + " / " //$NON-NLS-1$
+					+ revisionSession.getWordsNumber());
 			nextWord();
 		}
 	}
 
 	private void editPhrase() {
-		PhraseEntry currentRevision = revisionSession
-				.getCurrentPhrase();
+		PhraseEntry currentRevision = revisionSession.getCurrentPhrase();
 
 		String s = (String) JOptionPane.showInputDialog(
 				instance,
@@ -180,11 +186,12 @@ public class RevisionsDialog extends JDialog {
 				JOptionPane.PLAIN_MESSAGE, null, null,
 				currentRevision.getLangBText());
 
-		s = s.replace(TextUtils.CUSTOM_ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
+		if (s != null) {
+			s = s.replace(TextUtils.CUSTOM_ACCENT_MARKER, "\u0301"); //$NON-NLS-1$
+			revisionSession.editPhrase(s);
+		}
 
-		revisionSession.editPhrase(s);
-
-		textField.requestFocus();		
+		textField.requestFocus();
 	}
 
 	private void enterPhrase() {
@@ -194,16 +201,16 @@ public class RevisionsDialog extends JDialog {
 			boolean wasCorrect = revisionSession.processTypedWord(textField
 					.getText());
 
+			PhraseEntry currentRevision = revisionSession.getCurrentPhrase();
+
+			lblCorrect.setText(currentRevision.getLangBText()); //$NON-NLS-1$
 			if (wasCorrect) {
 				// correct
-				lblCorrect.setText(Messages.getString("ok")); //$NON-NLS-1$
 				lblStats.setText(revisionSession.getWordsNumber()
 						- revisionSession.getPendingRevisionsSize() + " / " //$NON-NLS-1$
 						+ revisionSession.getWordsNumber());
 			} else {
 				// incorrect
-				lblCorrect
-						.setText(Messages.getString("RevisionsDialog.correct") + revisionSession.getCurrentPhrase().getLangBText()); //$NON-NLS-1$
 				lblCorrect.setForeground(Color.red);
 				btnEdit.setEnabled(true);
 				btnAccept.setEnabled(true);
@@ -225,7 +232,8 @@ public class RevisionsDialog extends JDialog {
 		} else {
 			revisionSession.nextRevision();
 
-			lblPolish.setText(revisionSession.getCurrentPhrase().getLangAText());
+			lblPolish
+					.setText(revisionSession.getCurrentPhrase().getLangAText());
 
 			textField.setEditable(true);
 			textField.setText(""); //$NON-NLS-1$

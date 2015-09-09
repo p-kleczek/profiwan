@@ -34,7 +34,7 @@ public class DictionaryTable extends JTable {
 	private final DefaultTableModel dtm = new DefaultTableModel(null,
 			columnNames);
 
-	private final List<PhraseEntry> dictionary;
+	private List<PhraseEntry> dictionary;
 
 	private int lastModifiedEntryId = -1;
 
@@ -43,12 +43,7 @@ public class DictionaryTable extends JTable {
 
 	public DictionaryTable(List<PhraseEntry> dictionary) {
 		setModel(dtm);
-
-		this.dictionary = dictionary;
-
-		for (PhraseEntry e : dictionary) {
-			addRowToDTM(e);
-		}
+		reloadDictionary(dictionary);
 
 		dtm.addTableModelListener(new TableModelListener() {
 
@@ -93,9 +88,20 @@ public class DictionaryTable extends JTable {
 			}
 		});
 	}
+	
+	public void reloadDictionary(List<PhraseEntry> dict) {
+		dtm.setRowCount(0);
+		this.dictionary = dict;
+
+		for (PhraseEntry e : dictionary) {
+			addRowToDTM(e);
+		}
+
+		dtm.fireTableDataChanged();
+	}
 
 	private void addRowToDTM(PhraseEntry pe) {
-		String isInRevisionStr = pe.isInRevisions() ? "y" : ""; //$NON-NLS-1$ //$NON-NLS-2$
+		String isInRevisionStr = pe.isInRevisions() ? "yes" : ""; //$NON-NLS-1$ //$NON-NLS-2$
 		dtm.addRow(new Object[] {
 				pe.getLangBText(),
 				pe.getLangAText(),

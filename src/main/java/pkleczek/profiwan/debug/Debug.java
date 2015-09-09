@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -11,16 +12,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.smartcardio.ATR;
-
 import org.joda.time.DateTime;
 
 import pkleczek.profiwan.model.PhraseEntry;
 import pkleczek.profiwan.model.RevisionEntry;
 import pkleczek.profiwan.model.RevisionsSession;
-import pkleczek.profiwan.utils.DBUtils;
 import pkleczek.profiwan.utils.DatabaseHelper;
 import pkleczek.profiwan.utils.DatabaseHelperImpl;
+import pkleczek.profiwan.utils.PhrasesTransfer;
+import pkleczek.profiwan.utils.TextUtils;
 
 public class Debug {
 
@@ -49,7 +49,7 @@ public class Debug {
 			e.setLangA("pl");
 			e.setLangB("rus");
 			e.setLangAText("ala");
-			e.setLangBText("ma");
+			e.setLangBText("ma" + TextUtils.UNICODE_ACCENT_MARKER);
 			e.setCreatedAt(DateTime.now());
 			e.setLabel("rand");
 			e.setInRevisions(true);
@@ -184,7 +184,7 @@ public class Debug {
 				DatabaseHelper.KEY_PHRASE_LABEL,
 				DatabaseHelper.KEY_PHRASE_IN_REVISION };
 
-		DBUtils.exportPhrasesToCSV("logs/phrases.csv", dict, attribs);
+		PhrasesTransfer.exportPhrasesToCSV("logs/phrases.csv", dict, attribs);
 
 		System.exit(0);
 	}
@@ -197,10 +197,9 @@ public class Debug {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		String[] attribs = new String[] {
-				DatabaseHelper.KEY_ID,
-//				DatabaseHelper.KEY_CREATED_AT,
+
+		String[] attribs = new String[] { DatabaseHelper.KEY_ID,
+				// DatabaseHelper.KEY_CREATED_AT,
 				DatabaseHelper.KEY_PHRASE_LANG1,
 				DatabaseHelper.KEY_PHRASE_LANG2,
 				DatabaseHelper.KEY_PHRASE_LANG1_TEXT,
@@ -210,8 +209,15 @@ public class Debug {
 
 		Set<String> setAttr = new HashSet<>(Arrays.asList(attribs));
 
-		Collection<PhraseEntry> list = DBUtils.importPhrasesFromCSV("logs/phrases.csv", setAttr, dbHelper);
+		Collection<PhraseEntry> list = PhrasesTransfer.importPhrasesFromCSV(
+				"logs/dictionary.csv", setAttr, dbHelper);
 
-		System.out.println(list);
+		List<PhraseEntry> copy = new ArrayList<>(list);
+		
+		System.out.println(dbHelper.getDictionary().size());
+		System.out.println(PhrasesTransfer.importIntoDatabase(dbHelper, list));
+		System.out.println(dbHelper.getDictionary().size());
+		System.out.println(PhrasesTransfer.importIntoDatabase(dbHelper, copy));
+		System.out.println(dbHelper.getDictionary().size());
 	}
 }
